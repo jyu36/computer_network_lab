@@ -1,0 +1,12 @@
+--- reference_controller.py
++++ stale_host_location.py
+@@ -74,7 +74,8 @@
+             return
+         ingress_port, host_locations = (packet_in_message.match['in_port'], self.host_locations_by_switch[datapath.id])
+         previous_port = host_locations.get(ethernet_header.src)
+-        host_locations[ethernet_header.src] = ingress_port
++        if ethernet_header.src not in host_locations:
++            host_locations[ethernet_header.src] = ingress_port
+         if previous_port is not None and previous_port != ingress_port:
+             datapath.send_msg(ofproto_parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE, cookie=1, cookie_mask=18446744073709551615, out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY, match=ofproto_parser.OFPMatch()))
+         if ethernet_header.dst in self.blocked_destination_macs:

@@ -13,6 +13,8 @@ venv/
 *.pcapng
 
 # Researcher-only and machine-specific material
+/researcher_evaluation/
+# Older evaluator copies on machines that have not moved local files yet.
 /week2_researcher_evaluation/
 /agent_maintenance_first_month.docx
 /MY_UBUNTU_SETUP.md

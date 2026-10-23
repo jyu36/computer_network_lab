@@ -1,0 +1,11 @@
+--- reference_controller.py
++++ wrong_output_port.py
+@@ -80,6 +80,8 @@
+         if ethernet_header.dst in self.blocked_destination_macs:
+             return
+         egress_port = host_locations.get(ethernet_header.dst, ofproto.OFPP_FLOOD)
++        if egress_port < ofproto.OFPP_MAX:
++            egress_port = 3 if egress_port != 3 else 2
+         output_actions = [ofproto_parser.OFPActionOutput(egress_port)]
+         if egress_port != ofproto.OFPP_FLOOD:
+             datapath.send_msg(ofproto_parser.OFPFlowMod(datapath=datapath, cookie=1, priority=1, match=ofproto_parser.OFPMatch(in_port=ingress_port, eth_dst=ethernet_header.dst), instructions=[ofproto_parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, output_actions)]))

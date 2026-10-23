@@ -1,9 +1,0 @@
-{
-  "template_sha256": "e0c7bc11c6df45780a65c5300cac17506f071b5b89343425b3d2e5e6aab8ed50",
-  "variants": {
-    "good": "fe42f7e4d415917a14345ce8e3a6482c2a333e28c39efa9ecd062e54620f208d",
-    "wrong_port": "8b532a0a6c9264cbdea33e1910eb8a774f4d9d8804061c3089b9cc21535c5dc6",
-    "stale_mapping": "a5148f2cd1013b41d82b7d4be8ebc499e26c2f82148bee0eed3bd228754c8c4e",
-    "cached_bypass": "da2aae96f5824f922f84a6fafedc58e4c1cb0728bd2cedaf16122a88966c2c7b"
-  }
-}

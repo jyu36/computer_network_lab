@@ -1,0 +1,9 @@
+{
+  "template_sha256": "a8d0f10ce7566d7520fd69d9fea7c97eb3de898e5715fad13aeeddeab0b88ab4",
+  "variants": {
+    "reference_controller": "26626ce02347333303323a6aefccb287c81230cc4bfb18336d5ba721e57427d3",
+    "wrong_output_port": "2117d224d27e39c27f46aedb6a015cd6f522896ae05069dc89911ceab43071f0",
+    "stale_host_location": "20c9c2517ff510e56ec59377c2908f3e61f2bb446ea0fd78d54299497b3fc300",
+    "cached_policy_bypass": "d0d1914cbc13cef2229ed5a7c5a1612564516e1b5222764178d921b15546d3a1"
+  }
+}

@@ -1,0 +1,11 @@
+--- reference_controller.py
++++ cached_policy_bypass.py
+@@ -101,8 +101,6 @@
+                 ofproto_parser, ofproto = (datapath.ofproto_parser, datapath.ofproto)
+                 for destination_mac in self.blocked_destination_macs - updated_blocklist:
+                     datapath.send_msg(ofproto_parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE_STRICT, priority=100, match=ofproto_parser.OFPMatch(eth_dst=destination_mac), out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY))
+-                for destination_mac in updated_blocklist - self.blocked_destination_macs:
+-                    self.install_flow_rule(datapath, 100, ofproto_parser.OFPMatch(eth_dst=destination_mac), [])
+             self.blocked_destination_macs = updated_blocklist
+         if not self.connected_switches:
+             self.send_reply(controller_request, ControllerReply(controller_request.src, 503, {'error': 'No connected switch'}))
