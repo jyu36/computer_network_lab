@@ -1,0 +1,12 @@
+--- good.py
++++ stale_mapping.py
+@@ -66,7 +66,8 @@
+             return
+         incoming, table = (msg.match['in_port'], self.tables[dp.id])
+         old = table.get(eth.src)
+-        table[eth.src] = incoming
++        if eth.src not in table:
++            table[eth.src] = incoming
+         if old is not None and old != incoming:
+             dp.send_msg(p.OFPFlowMod(datapath=dp, command=o.OFPFC_DELETE, cookie=1, cookie_mask=18446744073709551615, out_port=o.OFPP_ANY, out_group=o.OFPG_ANY, match=p.OFPMatch()))
+         if eth.dst in self.blocked:

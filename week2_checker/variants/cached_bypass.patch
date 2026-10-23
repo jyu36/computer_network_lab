@@ -1,0 +1,11 @@
+--- good.py
++++ cached_bypass.py
+@@ -92,8 +92,6 @@
+                 p, o = (dp.ofproto_parser, dp.ofproto)
+                 for mac in self.blocked - new:
+                     dp.send_msg(p.OFPFlowMod(datapath=dp, command=o.OFPFC_DELETE_STRICT, priority=100, match=p.OFPMatch(eth_dst=mac), out_port=o.OFPP_ANY, out_group=o.OFPG_ANY))
+-                for mac in new - self.blocked:
+-                    self.add_flow(dp, 100, p.OFPMatch(eth_dst=mac), [])
+             self.blocked = new
+         if not self.switches:
+             self.send_reply(req, Reply(req.src, 503, {'error': 'No connected switch'}))

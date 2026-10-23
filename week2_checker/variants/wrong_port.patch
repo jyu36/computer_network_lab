@@ -1,0 +1,11 @@
+--- good.py
++++ wrong_port.py
+@@ -72,6 +72,8 @@
+         if eth.dst in self.blocked:
+             return
+         output = table.get(eth.dst, o.OFPP_FLOOD)
++        if output < o.OFPP_MAX:
++            output = 3 if output != 3 else 2
+         actions = [p.OFPActionOutput(output)]
+         if output != o.OFPP_FLOOD:
+             dp.send_msg(p.OFPFlowMod(datapath=dp, cookie=1, priority=1, match=p.OFPMatch(in_port=incoming, eth_dst=eth.dst), instructions=[p.OFPInstructionActions(o.OFPIT_APPLY_ACTIONS, actions)]))

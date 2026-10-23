@@ -1,0 +1,22 @@
+# Local machine and Python files
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+
+# Generated experiment evidence
+**/results/
+*.pcap
+*.pcapng
+
+# Researcher-only and machine-specific material
+/week2_researcher_evaluation/
+/agent_maintenance_first_month.docx
+/MY_UBUNTU_SETUP.md
+
+# Earlier drafts, if restored locally
+/testing/
+/RAIN_Week2_Testing_Draft.zip

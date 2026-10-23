@@ -1,0 +1,53 @@
+[
+  {
+    "id": "B01_unknown_flood",
+    "stage": "base",
+    "scenario": "unknown"
+  },
+  {
+    "id": "B02_known_forward",
+    "stage": "base",
+    "scenario": "known"
+  },
+  {
+    "id": "B03_arp_and_ping",
+    "stage": "base",
+    "scenario": "ping"
+  },
+  {
+    "id": "P01_destination_block",
+    "stage": "blocklist",
+    "scenario": "static",
+    "blocked": "h2"
+  },
+  {
+    "id": "P02_unknown_blocked_destination",
+    "stage": "blocklist",
+    "scenario": "static_unknown",
+    "blocked": "h2"
+  },
+  {
+    "id": "M01_move_after_cache",
+    "stage": "movement",
+    "scenario": "move",
+    "moved": "h2"
+  },
+  {
+    "id": "M02_move_preserves_policy",
+    "stage": "movement",
+    "scenario": "move_block",
+    "moved": "h2",
+    "blocked": "h3"
+  },
+  {
+    "id": "R01_block_unblock_cached",
+    "stage": "runtime",
+    "scenario": "runtime",
+    "blocked": "h2"
+  },
+  {
+    "id": "R02_reject_invalid_policy",
+    "stage": "runtime",
+    "scenario": "invalid"
+  }
+]
