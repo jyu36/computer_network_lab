@@ -89,6 +89,16 @@ selects one fixture; `--case-id known_destination_forwarding` selects one case. 
 prints the experiment matrix without requiring Linux. `--suite full` is the
 default; the original stock controller defaults to the base suite.
 
+For development, add `--quick` to either runner. This keeps all selected cases
+but limits known-forwarding and ping checks to six reproducible directed host
+pairs per configuration, including the configured source/destination in both
+directions. `--max-host-pairs N` sets another limit; zero restores every pair.
+`--pair-seed N` reproduces a sample. Sampled reports are labeled in the console
+and JSON/CSV; each pair selection is recorded in the case's `events.json`.
+Quick mode preserves the normal observation window and fresh-case resets.
+Use the default full run for complete host-pair evidence. Verbose case output
+includes elapsed time. These speed changes still need Ubuntu validation.
+
 Legacy stages remain cumulative: base selects 3 cases, blocklist 5, movement 7, and runtime 9.
 Base cases cover flooding, known forwarding without leakage, and all-pairs ping.
 Blocking cases check destination blocking before and after learning. Movement cases simulate

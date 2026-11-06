@@ -9,6 +9,7 @@ import platform
 import shutil
 import sys
 import traceback
+import time
 from pathlib import Path
 from Helpers.environment import (
     NetworkTestEnvironment,
@@ -102,7 +103,25 @@ def main():
         action="store_true",
         help="Print individual case outcomes as well as grouped results",
     )
+    argument_parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Development run: sample at most six directed pairs for forwarding and ping",
+    )
+    argument_parser.add_argument(
+        "--max-host-pairs",
+        type=int,
+        default=None,
+        help="Pair limit for forwarding/ping; zero tests every pair",
+    )
+    argument_parser.add_argument(
+        "--pair-seed", type=int, default=0, help="Reproduce the selected host pairs"
+    )
     options = argument_parser.parse_args()
+    if options.max_host_pairs is None:
+        options.max_host_pairs = 6 if options.quick else 0
+    if options.max_host_pairs < 0:
+        argument_parser.error("--max-host-pairs must be nonnegative")
     if options.suite and options.stage:
         argument_parser.error("Choose --suite or the legacy --stage, not both")
     options.stage = (
@@ -150,6 +169,21 @@ def main():
                     ],
                     "cases": [case["id"] for case in test_cases],
                     "experiment_count": len(configurations) * len(test_cases),
+                    "profile": "sampled" if options.max_host_pairs else "full",
+                    "host_pair_coverage": {
+                        configuration.name: {
+                            "selected": min(
+                                options.max_host_pairs
+                                or len(configuration.host_names)
+                                * (len(configuration.host_names) - 1),
+                                len(configuration.host_names)
+                                * (len(configuration.host_names) - 1),
+                            ),
+                            "total": len(configuration.host_names)
+                            * (len(configuration.host_names) - 1),
+                        }
+                        for configuration in configurations
+                    },
                     "reset": "Fresh controller and network for each configuration/case",
                 },
                 indent=2,
@@ -197,6 +231,19 @@ def main():
     (evidence_directory / "environment.json").write_text(
         json.dumps(environment_details, indent=2)
     )
+    print(
+        "Profile: %s; observation window: %.2fs"
+        % (
+            (
+                "SAMPLED development run (pair limit %d, seed %d)"
+                % (options.max_host_pairs, options.pair_seed)
+                if options.max_host_pairs
+                else "FULL (all host pairs for forwarding/ping)"
+            ),
+            options.observation_seconds,
+        ),
+        flush=True,
+    )
     case_results = []
     cleanup_failed = False
     for configuration in configurations:
@@ -218,6 +265,9 @@ def main():
                 "id": test_case["id"],
                 "stage": test_case["stage"],
                 "status": "PASS",
+                "profile": "sampled" if options.max_host_pairs else "full",
+                "max_host_pairs": options.max_host_pairs,
+                "pair_seed": options.pair_seed,
             }
             if cleanup_failed:
                 test_result.update(
@@ -229,6 +279,9 @@ def main():
                     json.dumps(test_result, indent=2)
                 )
                 continue
+            if options.verbose:
+                print("RUN %s / %s" % (configuration.name, test_case["id"]), flush=True)
+            case_started = time.monotonic()
             try:
                 test_environment.start_network_and_controller()
                 test_environment.run_test_scenario()
@@ -256,16 +309,18 @@ def main():
                 except Exception as error:
                     test_result.update(status="ERROR", cleanup_error=repr(error))
                     cleanup_failed = True
+            test_result["duration_seconds"] = round(time.monotonic() - case_started, 3)
             (case_evidence_directory / "result.json").write_text(
                 json.dumps(test_result, indent=2)
             )
             case_results.append(test_result)
             if options.verbose:
                 print(
-                    "%s %s %s"
+                    "%s %s (%.1fs) %s"
                     % (
                         test_result["status"],
                         test_case["id"],
+                        test_result["duration_seconds"],
                         test_result.get("error", ""),
                     ),
                     flush=True,

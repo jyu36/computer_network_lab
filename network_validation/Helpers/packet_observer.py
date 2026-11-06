@@ -184,6 +184,42 @@ class PacketObserver:
                     receiver=receiver_host_name,
                 )
 
+    def assert_ping_delivery(self, source_host_name, destination_host_name):
+        """Check one directed ARP/ICMP round trip for a sampled ping run."""
+        source = self.network.get(source_host_name)
+        destination = self.network.get(destination_host_name)
+        child = source.popen(
+            ["ping", "-n", "-c", "1", "-W", "1", destination.IP()],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        try:
+            output, _ = child.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            stop_process(child)
+            raise
+        text = output.decode(errors="replace") if isinstance(output, bytes) else output
+        (
+            self.evidence_directory
+            / ("ping_%s_to_%s.log" % (source_host_name, destination_host_name))
+        ).write_text(text)
+        self.recorded_events.append(
+            {
+                "ping": {
+                    "source": source_host_name,
+                    "destination": destination_host_name,
+                    "returncode": child.returncode,
+                }
+            }
+        )
+        if child.returncode == 1:
+            raise BehaviorFailure(
+                "ping_delivery",
+                "Ping failed: %s -> %s" % (source_host_name, destination_host_name),
+            )
+        if child.returncode != 0:
+            raise RuntimeError("Ping process error: " + text)
+
     def assert_destination_delivery(
         self, source_host_name, destination_host_name, expected_delivery=True
     ):

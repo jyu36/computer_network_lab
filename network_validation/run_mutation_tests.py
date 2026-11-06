@@ -38,7 +38,18 @@ def main():
     )
     argument_parser.add_argument("--configuration", action="append")
     argument_parser.add_argument("--timeout-seconds", type=int, default=3600)
+    argument_parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Use sampled host pairs in every reference and mutant run",
+    )
+    argument_parser.add_argument("--max-host-pairs", type=int, default=None)
+    argument_parser.add_argument("--pair-seed", type=int, default=0)
     options = argument_parser.parse_args()
+    if options.max_host_pairs is None:
+        options.max_host_pairs = 6 if options.quick else 0
+    if options.max_host_pairs < 0:
+        argument_parser.error("--max-host-pairs must be nonnegative")
     configurations = load_configurations(
         options.configuration_file, options.configuration
     )
@@ -46,6 +57,16 @@ def main():
         argument_parser.error("Select configurations and a positive timeout")
     if options.repetition_count < 1:
         argument_parser.error("repeats must be positive")
+    print(
+        "Profile: %s"
+        % (
+            "SAMPLED development comparison (pair limit %d, seed %d)"
+            % (options.max_host_pairs, options.pair_seed)
+            if options.max_host_pairs
+            else "FULL (all host pairs for forwarding/ping)"
+        ),
+        flush=True,
+    )
     mutation_results_directory = (
         VALIDATION_DIRECTORY
         / "results"
@@ -58,6 +79,9 @@ def main():
     mutation_report = {
         "runs": [],
         "complete": False,
+        "profile": "sampled" if options.max_host_pairs else "full",
+        "max_host_pairs": options.max_host_pairs,
+        "pair_seed": options.pair_seed,
         "note": "Curated defects only; not a general correctness guarantee",
     }
     development_cases = json.loads(
@@ -87,11 +111,18 @@ def main():
             "--output",
             str(variant_results_directory),
         ]
-        runner_command += ["--configuration-file", options.configuration_file]
+        runner_command += [
+            "--configuration-file",
+            options.configuration_file,
+            "--max-host-pairs",
+            str(options.max_host_pairs),
+            "--pair-seed",
+            str(options.pair_seed),
+        ]
         for configuration in configurations:
             runner_command += ["--configuration", configuration.name]
         print(
-            "Running %s, repetition %d: full suite on %d configurations"
+            "Running %s, repetition %d: all selected cases on %d configurations"
             % (variant_name, repetition_number, len(configurations)),
             flush=True,
         )

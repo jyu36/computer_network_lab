@@ -20,7 +20,17 @@ def save_results(directory, results):
     with (directory / "summary.csv").open("w", newline="") as stream:
         writer = csv.DictWriter(
             stream,
-            fieldnames=["configuration", "id", "stage", "status", "error"],
+            fieldnames=[
+                "configuration",
+                "id",
+                "stage",
+                "status",
+                "profile",
+                "max_host_pairs",
+                "pair_seed",
+                "duration_seconds",
+                "error",
+            ],
             extrasaction="ignore",
         )
         writer.writeheader()
@@ -32,6 +42,11 @@ def format_summary(results):
     lines = [
         "Configuration                 Base     Block    Move     Runtime  Outcome"
     ]
+    if any(row.get("profile") == "sampled" for row in results):
+        lines.insert(
+            0,
+            "SAMPLED development results: forwarding/ping may cover fewer host pairs; see events.json.",
+        )
     for name in dict.fromkeys(row["configuration"] for row in results):
         rows = [row for row in results if row["configuration"] == name]
         counts = Counter(row["status"] for row in rows)

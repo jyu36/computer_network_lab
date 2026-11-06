@@ -11,13 +11,17 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from generate_controller_variants import generate_controller_variants
 from run_mutation_tests import classify_test_run, matches_expected_defect
 from Helpers.topology import NetworkConfiguration, load_configurations, host_mac_address
 from Helpers.environment import NetworkTestEnvironment, check_service_port_available
-from Helpers.results import format_summary
+from Helpers.results import format_summary, BehaviorFailure
+from Helpers.host_pairs import select_host_pairs
+from Helpers.packet_observer import PacketObserver
+from cases.base import test_known_destination_forwarding as run_known_forwarding_case
+from cases.base import test_arp_and_ping as run_arp_and_ping_case
 import run_network_tests
 from run_network_tests import load_test_cases
 
@@ -525,6 +529,148 @@ class ConfigurableExperimentTests(unittest.TestCase):
             self.assertIn("two_switches_4_hosts", output.getvalue())
             self.assertIn("1 FAIL", format_summary(summary))
             self.assertTrue(next(Path(temporary).glob("*/summary.csv")).is_file())
+
+
+class SampledDevelopmentRunTests(unittest.TestCase):
+    """Keep quick runs reproducible and visibly distinct from full pair coverage."""
+
+    def test_full_pairs_and_seeded_samples_use_the_inventory(self):
+        hosts = ["h%d" % index for index in range(1, 501)]
+        roles = {"source": "h400", "destination": "h256", "other": "h1"}
+        sample = select_host_pairs(hosts, roles, 6, 7)
+        self.assertEqual(len(sample), 6)
+        self.assertEqual(len(set(sample)), 6)
+        self.assertEqual(sample[:2], [("h400", "h256"), ("h256", "h400")])
+        self.assertEqual(sample, select_host_pairs(hosts, roles, 6, 7))
+        self.assertNotEqual(sample, select_host_pairs(hosts, roles, 6, 8))
+        self.assertTrue(
+            all(
+                source in hosts and destination in hosts and source != destination
+                for source, destination in sample
+            )
+        )
+        small_hosts = ["h1", "h2", "h3"]
+        small_roles = {"source": "h1", "destination": "h2", "other": "h3"}
+        expected = [
+            (source, destination)
+            for source in small_hosts
+            for destination in small_hosts
+            if source != destination
+        ]
+        self.assertEqual(select_host_pairs(small_hosts, small_roles), expected)
+        self.assertEqual(select_host_pairs(small_hosts, small_roles, 100), expected)
+        self.assertEqual(select_host_pairs(small_hosts, small_roles, 1), [("h1", "h2")])
+
+    def test_quick_plan_labels_pair_coverage_and_keeps_all_cases(self):
+        command = [
+            sys.executable,
+            str(VALIDATION_DIRECTORY / "run_network_tests.py"),
+            "--controller",
+            "unused",
+            "--quick",
+            "--plan",
+        ]
+        plan = json.loads(subprocess.check_output(command, text=True, timeout=10))
+        self.assertEqual(plan["experiment_count"], 45)
+        self.assertEqual(plan["profile"], "sampled")
+        self.assertEqual(
+            plan["host_pair_coverage"]["deep_tree_7_switches_8_hosts"],
+            {"selected": 6, "total": 56},
+        )
+        full = json.loads(
+            subprocess.check_output(
+                [arg for arg in command if arg != "--quick"], text=True, timeout=10
+            )
+        )
+        self.assertEqual(full["profile"], "full")
+        self.assertEqual(
+            full["host_pair_coverage"]["deep_tree_7_switches_8_hosts"],
+            {"selected": 56, "total": 56},
+        )
+        self.assertIn(
+            "SAMPLED",
+            format_summary(
+                [
+                    {
+                        "configuration": "tree",
+                        "id": "known",
+                        "stage": "base",
+                        "status": "PASS",
+                        "profile": "sampled",
+                    }
+                ]
+            ),
+        )
+
+    def test_known_forwarding_checks_sampled_pairs_and_all_other_receivers(self):
+        pairs = [("h1", "h4"), ("h4", "h1")]
+        environment = SimpleNamespace(
+            host_names=["h1", "h2", "h3", "h4"],
+            selected_host_pairs=lambda: pairs,
+            learn_host_locations=Mock(),
+            establish_cached_forwarding=Mock(),
+            forwarding_packet_counts=Mock(
+                side_effect=[{"s1": 0}, {"s1": 3}, {"s1": 10}, {"s1": 13}]
+            ),
+            assert_packet_delivery=Mock(),
+            recorded_events=[],
+        )
+        run_known_forwarding_case(environment)
+        self.assertEqual(environment.establish_cached_forwarding.call_count, 2)
+        self.assertEqual(environment.assert_packet_delivery.call_count, 2)
+        source, destination, observers, expected = (
+            environment.assert_packet_delivery.call_args_list[0].args
+        )
+        self.assertEqual((source, destination), ("h1", "h4"))
+        self.assertEqual(set(observers), {"h2", "h3", "h4"})
+        self.assertEqual(expected, {"h2": False, "h3": False, "h4": True})
+
+    def test_sampled_ping_uses_selected_directions_and_full_ping_keeps_pingall(self):
+        hosts = ["h1", "h2", "h3"]
+        pairs = [("h1", "h2"), ("h2", "h1")]
+        environment = SimpleNamespace(
+            host_names=hosts,
+            selected_host_pairs=lambda: pairs,
+            assert_ping_delivery=Mock(),
+            network=SimpleNamespace(pingAll=Mock(return_value=0)),
+            recorded_events=[],
+        )
+        run_arp_and_ping_case(environment)
+        self.assertEqual(environment.assert_ping_delivery.call_count, 2)
+        environment.network.pingAll.assert_not_called()
+        roles = {"source": "h1", "destination": "h2", "other": "h3"}
+        environment.selected_host_pairs = lambda: select_host_pairs(hosts, roles)
+        run_arp_and_ping_case(environment)
+        environment.network.pingAll.assert_called_once_with(timeout="1")
+
+    def test_sampled_ping_distinguishes_packet_loss_from_execution_errors(self):
+        for returncode, expected_error in (
+            (0, None),
+            (1, BehaviorFailure),
+            (2, RuntimeError),
+        ):
+            with self.subTest(
+                returncode=returncode
+            ), tempfile.TemporaryDirectory() as temporary:
+                process = SimpleNamespace(
+                    returncode=returncode,
+                    communicate=lambda timeout: (b"ping evidence", None),
+                )
+                node = SimpleNamespace(
+                    popen=lambda *args, **kwargs: process, IP=lambda: "10.0.0.2"
+                )
+                observer = PacketObserver()
+                observer.network = SimpleNamespace(get=lambda name: node)
+                observer.evidence_directory = Path(temporary)
+                observer.recorded_events = []
+                if expected_error is None:
+                    observer.assert_ping_delivery("h1", "h2")
+                else:
+                    with self.assertRaises(expected_error):
+                        observer.assert_ping_delivery("h1", "h2")
+                self.assertEqual(
+                    (Path(temporary) / "ping_h1_to_h2.log").read_text(), "ping evidence"
+                )
 
 
 class ControllerPortCheckTests(unittest.TestCase):

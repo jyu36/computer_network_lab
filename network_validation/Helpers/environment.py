@@ -12,6 +12,7 @@ import urllib.request
 from pathlib import Path
 
 from .topology import host_mac_address
+from .host_pairs import select_host_pairs
 from cases import SCENARIOS
 from .results import BehaviorFailure
 from .packet_observer import PacketObserver
@@ -292,6 +293,28 @@ class NetworkTestEnvironment(PacketObserver):
             (self.evidence_directory / (snapshot_label + ".api-error.txt")).write_text(
                 repr(error)
             )
+
+    def selected_host_pairs(self):
+        """Choose and record the exact directed pairs exercised by this case."""
+        pairs = select_host_pairs(
+            self.host_names,
+            self.roles,
+            self.options.max_host_pairs,
+            self.options.pair_seed,
+        )
+        total = len(self.host_names) * (len(self.host_names) - 1)
+        self.recorded_events.append(
+            {
+                "host_pair_coverage": {
+                    "mode": "all" if len(pairs) == total else "sampled",
+                    "selected": len(pairs),
+                    "total": total,
+                    "seed": self.options.pair_seed,
+                    "pairs": pairs,
+                }
+            }
+        )
+        return pairs
 
     def learn_host_locations(self, host_names=None):
         """Send ARP traffic so the controller can learn host locations naturally."""
