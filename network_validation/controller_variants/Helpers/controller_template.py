@@ -198,7 +198,7 @@ class LearningSwitchController(app_manager.RyuApp):
     def handle_controller_request(self, controller_request):
         """Process an API request and acknowledge updates after switch barriers."""
         if controller_request.operation == "status":
-            self.send_reply(
+            self.reply_to_request(
                 controller_request,
                 ControllerReply(
                     controller_request.src,
@@ -223,7 +223,7 @@ class LearningSwitchController(app_manager.RyuApp):
                     for mac_address in policy_request_body["blocked"]
                 )
             ):
-                self.send_reply(
+                self.reply_to_request(
                     controller_request,
                     ControllerReply(
                         controller_request.src,
@@ -263,7 +263,7 @@ class LearningSwitchController(app_manager.RyuApp):
                         )
             self.blocked_destination_macs = updated_blocklist
         if not self.connected_switches:
-            self.send_reply(
+            self.reply_to_request(
                 controller_request,
                 ControllerReply(
                     controller_request.src, 503, {"error": "No connected switch"}
@@ -292,7 +292,7 @@ class LearningSwitchController(app_manager.RyuApp):
             controller_request, pending_switch_barriers = pending_request
             pending_switch_barriers.remove(barrier_key)
             if not pending_switch_barriers:
-                self.send_reply(
+                self.reply_to_request(
                     controller_request,
                     ControllerReply(
                         controller_request.src,

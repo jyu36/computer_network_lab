@@ -47,6 +47,115 @@ class ValidationToolTests(unittest.TestCase):
             classify_test_run(0, [{"id": "x", "status": "PASS"}], ["x"]), "PASS"
         )
 
+    def test_controller_replies_cover_startup_errors_and_all_switch_barriers(self):
+        """Execute generated handlers against the documented Ryu reply interface.
+
+        This isolates request/reply behavior; it does not emulate OpenFlow forwarding.
+        The harness intentionally provides reply_to_request and no send_reply method.
+        """
+        sources = [
+            VALIDATION_DIRECTORY / "controller_variants" / (name + ".py")
+            for name in (
+                "reference_controller",
+                "wrong_output_port",
+                "stale_host_location",
+                "cached_policy_bypass",
+            )
+        ]
+        for source in sources:
+            with self.subTest(controller=source.stem):
+                tree = ast.parse(source.read_text())
+                controller_class = next(
+                    node
+                    for node in tree.body
+                    if isinstance(node, ast.ClassDef)
+                    and node.name == "LearningSwitchController"
+                )
+                methods = [
+                    node
+                    for node in controller_class.body
+                    if isinstance(node, ast.FunctionDef)
+                    and node.name
+                    in {"handle_controller_request", "handle_barrier_reply"}
+                ]
+                for method in methods:
+                    method.decorator_list = []
+                namespace = {
+                    "ControllerReply": lambda destination, status, body: SimpleNamespace(
+                        dst=destination, http_status=status, response_body=body
+                    )
+                }
+                exec(
+                    compile(
+                        ast.Module(body=methods, type_ignores=[]), str(source), "exec"
+                    ),
+                    namespace,
+                )
+                replies = []
+                controller = SimpleNamespace(
+                    connected_switches={},
+                    host_locations_by_switch={},
+                    blocked_destination_macs=set(),
+                    openflow_errors=[],
+                    pending_barrier_requests={},
+                    reply_to_request=lambda request, reply: replies.append(
+                        (request, reply)
+                    ),
+                )
+                request_handler = namespace["handle_controller_request"]
+                request_handler(
+                    controller, SimpleNamespace(operation="status", src="test")
+                )
+                self.assertEqual(replies[-1][1].http_status, 200)
+                self.assertEqual(replies[-1][1].response_body["switches"], [])
+                request_handler(
+                    controller,
+                    SimpleNamespace(operation="policy", request_body={}, src="test"),
+                )
+                self.assertEqual(replies[-1][1].http_status, 400)
+                request_handler(
+                    controller, SimpleNamespace(operation="sync", src="test")
+                )
+                self.assertEqual(replies[-1][1].http_status, 503)
+                for switch_id in (1, 2):
+                    controller.connected_switches[switch_id] = SimpleNamespace(
+                        id=switch_id,
+                        ofproto_parser=SimpleNamespace(
+                            OFPBarrierRequest=lambda datapath: SimpleNamespace(
+                                datapath=datapath
+                            )
+                        ),
+                        set_xid=lambda barrier: setattr(barrier, "xid", 1),
+                        send_msg=lambda message: None,
+                    )
+                for expected_status in (200, 500):
+                    if expected_status == 500:
+                        controller.openflow_errors.append({"type": 1, "code": 1})
+                    replies.clear()
+                    request_handler(
+                        controller, SimpleNamespace(operation="sync", src="test")
+                    )
+                    self.assertEqual(replies, [])
+                    self.assertEqual(
+                        set(controller.pending_barrier_requests), {(1, 1), (2, 1)}
+                    )
+                    for switch_id in (1, 2):
+                        namespace["handle_barrier_reply"](
+                            controller,
+                            SimpleNamespace(
+                                msg=SimpleNamespace(
+                                    datapath=controller.connected_switches[switch_id],
+                                    xid=1,
+                                )
+                            ),
+                        )
+                        self.assertEqual(len(replies), 0 if switch_id == 1 else 1)
+                    self.assertEqual(replies[-1][1].http_status, expected_status)
+                    self.assertEqual(
+                        replies[-1][1].response_body["complete"], expected_status == 200
+                    )
+                    self.assertFalse(controller.pending_barrier_requests)
+
     def test_variants_are_reproducible_and_do_not_use_runtime_bug_flags(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_root = Path(temporary_directory)

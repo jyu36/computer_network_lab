@@ -8,4 +8,4 @@
 -                    self.install_flow_rule(datapath, 100, ofproto_parser.OFPMatch(eth_dst=destination_mac), [])
              self.blocked_destination_macs = updated_blocklist
          if not self.connected_switches:
-             self.send_reply(controller_request, ControllerReply(controller_request.src, 503, {'error': 'No connected switch'}))
+             self.reply_to_request(controller_request, ControllerReply(controller_request.src, 503, {'error': 'No connected switch'}))

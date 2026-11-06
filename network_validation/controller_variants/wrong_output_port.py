@@ -91,12 +91,12 @@ class LearningSwitchController(app_manager.RyuApp):
     def handle_controller_request(self, controller_request):
         """Process an API request and acknowledge updates after switch barriers."""
         if controller_request.operation == 'status':
-            self.send_reply(controller_request, ControllerReply(controller_request.src, 200, {'switches': sorted(self.connected_switches), 'learned': self.host_locations_by_switch, 'blocked': sorted(self.blocked_destination_macs), 'errors': self.openflow_errors}))
+            self.reply_to_request(controller_request, ControllerReply(controller_request.src, 200, {'switches': sorted(self.connected_switches), 'learned': self.host_locations_by_switch, 'blocked': sorted(self.blocked_destination_macs), 'errors': self.openflow_errors}))
             return
         if controller_request.operation == 'policy':
             policy_request_body = controller_request.request_body
             if not isinstance(policy_request_body, dict) or set(policy_request_body) != {'blocked'} or (not isinstance(policy_request_body['blocked'], list)) or (not all((is_valid_mac_address(mac_address) for mac_address in policy_request_body['blocked']))):
-                self.send_reply(controller_request, ControllerReply(controller_request.src, 400, {'error': 'Expected blocked: list of MAC addresses'}))
+                self.reply_to_request(controller_request, ControllerReply(controller_request.src, 400, {'error': 'Expected blocked: list of MAC addresses'}))
                 return
             updated_blocklist = {mac_address.lower() for mac_address in policy_request_body['blocked']}
             for datapath in self.connected_switches.values():
@@ -107,7 +107,7 @@ class LearningSwitchController(app_manager.RyuApp):
                     self.install_flow_rule(datapath, 100, ofproto_parser.OFPMatch(eth_dst=destination_mac), [])
             self.blocked_destination_macs = updated_blocklist
         if not self.connected_switches:
-            self.send_reply(controller_request, ControllerReply(controller_request.src, 503, {'error': 'No connected switch'}))
+            self.reply_to_request(controller_request, ControllerReply(controller_request.src, 503, {'error': 'No connected switch'}))
             return
         pending_switch_barriers = set()
         for datapath in self.connected_switches.values():
@@ -127,7 +127,7 @@ class LearningSwitchController(app_manager.RyuApp):
             controller_request, pending_switch_barriers = pending_request
             pending_switch_barriers.remove(barrier_key)
             if not pending_switch_barriers:
-                self.send_reply(controller_request, ControllerReply(controller_request.src, 500 if self.openflow_errors else 200, {'complete': not self.openflow_errors, 'errors': self.openflow_errors}))
+                self.reply_to_request(controller_request, ControllerReply(controller_request.src, 500 if self.openflow_errors else 200, {'complete': not self.openflow_errors, 'errors': self.openflow_errors}))
 
     @set_ev_cls(ofp_event.EventOFPErrorMsg, [CONFIG_DISPATCHER, MAIN_DISPATCHER])
     def handle_openflow_error(self, received_event):
