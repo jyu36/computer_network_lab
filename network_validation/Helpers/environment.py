@@ -447,6 +447,23 @@ class NetworkTestEnvironment(PacketObserver):
             )
 
 
+def check_service_port_available(service_port):
+    """Allow reuse after TCP shutdown while rejecting an existing listener."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as port_check_socket:
+            # Ryu's listeners reuse addresses too. A plain bind can incorrectly
+            # reject a recently closed connection that is still in TIME_WAIT.
+            port_check_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            port_check_socket.bind(("127.0.0.1", service_port))
+            port_check_socket.listen(1)
+    except OSError as error:
+        raise RuntimeError(
+            "Cannot reserve controller TCP port %d: %s. "
+            "Check active listeners in Ubuntu with sudo ss -ltnp; "
+            "stop the process using this port before retrying." % (service_port, error)
+        ) from error
+
+
 def validate_test_environment(options):
     """Check Linux/root privileges, dependencies, and unused switch/port resources."""
     if platform.system() != "Linux" or os.geteuid() != 0:
@@ -470,8 +487,7 @@ def validate_test_environment(options):
         if options.stock_controller_mode
         else [options.openflow_port, options.controller_api_port]
     ):
-        with socket.socket() as port_check_socket:
-            port_check_socket.bind(("127.0.0.1", service_port))
+        check_service_port_available(service_port)
     if Mininet is None:
         raise RuntimeError(
             "Mininet is not installed in this Python environment; use the Ubuntu system Python"

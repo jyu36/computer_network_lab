@@ -4,6 +4,7 @@ import ast
 import contextlib
 import io
 import json
+import socket
 import subprocess
 import sys
 import tempfile
@@ -15,7 +16,7 @@ from unittest.mock import patch
 from generate_controller_variants import generate_controller_variants
 from run_mutation_tests import classify_test_run, matches_expected_defect
 from Helpers.topology import NetworkConfiguration, load_configurations, host_mac_address
-from Helpers.environment import NetworkTestEnvironment
+from Helpers.environment import NetworkTestEnvironment, check_service_port_available
 from Helpers.results import format_summary
 import run_network_tests
 from run_network_tests import load_test_cases
@@ -524,6 +525,42 @@ class ConfigurableExperimentTests(unittest.TestCase):
             self.assertIn("two_switches_4_hosts", output.getvalue())
             self.assertIn("1 FAIL", format_summary(summary))
             self.assertTrue(next(Path(temporary).glob("*/summary.csv")).is_file())
+
+
+class ControllerPortCheckTests(unittest.TestCase):
+    """Exercise TCP port checks with real, bounded loopback connections."""
+
+    def test_existing_listener_is_rejected_with_the_port_number(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(1)
+            port = listener.getsockname()[1]
+            with self.assertRaisesRegex(RuntimeError, "TCP port %d" % port):
+                check_service_port_available(port)
+
+    def test_recently_closed_server_port_can_be_checked_repeatedly(self):
+        with socket.socket() as listener, socket.socket() as client:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.settimeout(2)
+            client.settimeout(2)
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(1)
+            address = listener.getsockname()
+            client.connect(address)
+            connection, _ = listener.accept()
+            with connection:
+                connection.settimeout(2)
+                connection.shutdown(socket.SHUT_WR)
+                self.assertEqual(client.recv(1), b"")
+                client.shutdown(socket.SHUT_WR)
+                self.assertEqual(connection.recv(1), b"")
+        # Confirm the old plain-bind preflight would reject this closed server.
+        with socket.socket() as plain_probe:
+            with self.assertRaises(OSError):
+                plain_probe.bind(address)
+        check_service_port_available(address[1])
+        check_service_port_available(address[1])
 
 
 if __name__ == "__main__":
