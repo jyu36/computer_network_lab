@@ -1,52 +1,52 @@
 [
   {
-    "id": "B01_unknown_flood",
+    "id": "unknown_destination_flooding",
     "stage": "base",
     "scenario": "unknown"
   },
   {
-    "id": "B02_known_forward",
+    "id": "known_destination_forwarding",
     "stage": "base",
     "scenario": "known"
   },
   {
-    "id": "B03_arp_and_ping",
+    "id": "arp_and_ping_connectivity",
     "stage": "base",
     "scenario": "ping"
   },
   {
-    "id": "P01_destination_block",
+    "id": "learned_destination_blocking",
     "stage": "blocklist",
     "scenario": "static",
-    "blocked": "h2"
+    "blocked": "$destination"
   },
   {
-    "id": "P02_unknown_blocked_destination",
+    "id": "unknown_destination_blocking",
     "stage": "blocklist",
     "scenario": "static_unknown",
-    "blocked": "h2"
+    "blocked": "$destination"
   },
   {
-    "id": "M01_move_after_cache",
+    "id": "host_movement_after_cached_forwarding",
     "stage": "movement",
     "scenario": "move",
-    "moved": "h2"
+    "moved": "$destination"
   },
   {
-    "id": "M02_move_preserves_policy",
+    "id": "host_movement_preserves_blocklist",
     "stage": "movement",
     "scenario": "move_block",
-    "moved": "h2",
-    "blocked": "h3"
+    "moved": "$destination",
+    "blocked": "$other"
   },
   {
-    "id": "R01_block_unblock_cached",
+    "id": "runtime_block_and_unblock_cached_destination",
     "stage": "runtime",
     "scenario": "runtime",
-    "blocked": "h2"
+    "blocked": "$destination"
   },
   {
-    "id": "R02_reject_invalid_policy",
+    "id": "invalid_policy_update_preserves_forwarding",
     "stage": "runtime",
     "scenario": "invalid"
   }

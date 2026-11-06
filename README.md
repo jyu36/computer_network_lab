@@ -1,7 +1,7 @@
 # Computer network lab
 
-Automated behavior tests for a Ryu OpenFlow 1.3 learning switch, using one OVS
-switch and three Mininet hosts. Edit on the Mac, push to GitHub, then pull and
+Automated behavior tests for a Ryu OpenFlow 1.3 learning switch, using configurable, loop-free OVS networks
+and Mininet hosts. Edit on the Mac, push to GitHub, then pull and
 run in Ubuntu. The harness starts and stops Ryu and Mininet for each independent
 case; movement and policy-update sequences preserve state within a case.
 
@@ -11,10 +11,17 @@ case; movement and policy-update sequences preserve state within a case.
 |---|---|
 | `controllers/example_switch_13.py` | Copy of the original installed Ryu controller |
 | `network_validation/run_network_tests.py` | Main network-test runner |
-| `network_validation/development_cases.json` | Nine visible test cases |
-| `network_validation/send_test_packets.py` | Generates tagged ARP and ICMP packets |
+| `network_validation/development_cases.json` | Nine case selections and actor roles |
+| `network_validation/cases/` | Readable test functions grouped by behavior |
+| `network_validation/network_configurations.json` | Host counts, switch links, ports and actor assignments |
+| `network_validation/Helpers/environment.py` | Network lifecycle, API and switch operations |
+| `network_validation/Helpers/packet_observer.py` | Probe execution and packet capture checks |
+| `network_validation/Helpers/topology.py` | Configuration validation and expected paths |
+| `network_validation/Helpers/results.py` | Grouped console results and JSON/CSV summaries |
+| `network_validation/Helpers/processes.py` | Bounded subprocess and readiness helpers |
+| `network_validation/Helpers/send_test_packets.py` | Generates tagged ARP and ICMP packets |
 | `network_validation/run_mutation_tests.py` | Compares the prepared reference and buggy controllers |
-| `network_validation/controller_template.py` | Expanded controller template |
+| `network_validation/controller_variants/Helpers/controller_template.py` | Expanded controller template |
 | `network_validation/generate_controller_variants.py` | Builds controller variants, diffs, and source hashes |
 | `network_validation/controller_variants/` | Generated reference and three deliberate controller defects |
 | `network_validation/test_validation_tools.py` | Local tooling regression tests |
@@ -76,20 +83,29 @@ The previous CLI spellings such as `--stock-base` and `--cases` remain aliases.
 
 ## Coverage and deliberate bugs
 
-Stages are cumulative: base selects 3 cases, blocklist 5, movement 7, and runtime 9.
-B01–B03 cover flooding, known forwarding without leakage, and all-pairs ping.
-P01/P02 check destination blocking before and after learning. M01/M02 simulate
-movement by renumbering a host's OVS port to 4 and check policy preservation.
-R01 checks repeated block/unblock updates on cached and new paths; R02 checks
+The default expanded-controller run selects all nine cases across all five network
+configurations (45 independent experiments). `--configuration single_switch_3_hosts`
+selects one fixture; `--case-id known_destination_forwarding` selects one case. `--plan`
+prints the experiment matrix without requiring Linux. `--suite full` is the
+default; the original stock controller defaults to the base suite.
+
+Legacy stages remain cumulative: base selects 3 cases, blocklist 5, movement 7, and runtime 9.
+Base cases cover flooding, known forwarding without leakage, and all-pairs ping.
+Blocking cases check destination blocking before and after learning. Movement cases simulate
+movement by renumbering a host's OVS port to an unused port on the same switch and check policy preservation.
+Runtime cases check repeated block/unblock updates on cached and new paths and
 invalid updates. These are sequence checks, not a measured coverage percentage.
 
 The prepared variants come from the AI-assisted expanded template, not the
 original controller copy. `reference_controller.py` is an intended passing
 control that still needs validation. The defects are `wrong_output_port.py`,
 `stale_host_location.py`, and `cached_policy_bypass.py`. Their patches and
-`source_manifest.json` record the exact source differences and hashes.
+`source_manifest.json` in `controller_variants/Helpers/` record the exact source differences and hashes.
 
-After validating the reference, run the mutation experiment from `network_validation/`:
+The mutation runner first requires the reference to pass, then runs the same full
+suite against each mutant. Detection requires its designated case to exhibit
+the intended failure on every selected configuration; errors invalidate the run.
+Run the mutation experiment from `network_validation/`:
 
 ```bash
 sudo /usr/bin/python3 run_mutation_tests.py \
@@ -110,11 +126,16 @@ ERROR is an execution or cleanup failure. Non-delivery is measured within a
 bounded observation window, one second after sending by default.
 
 The original controller passed three base cases in one reported Ubuntu run.
-The renamed harness, later-stage tests, and mutation detections still need
-Ubuntu integration validation. Known checker gaps remain: mutation failure
-attribution, stale-rule output parsing, and complete cached-rule verification.
-This setup does not establish multi-switch behavior, IPv6 support, performance,
-physical cable reattachment, or formal correctness.
+The restructured harness and all expanded configurations still need Ubuntu
+integration validation. Local tooling checks cannot establish real forwarding
+correctness. The five fixtures include single-switch networks, a two-switch network, a
+three-switch branching tree and a seven-switch deeper tree; supported configurations
+are connected, loop-free switch trees with at least three hosts. Movement
+changes a port on the same switch. IPv6, cyclic topologies, cross-switch host
+reattachment, performance guarantees and formal correctness are outside scope.
+The known-destination forwarding case checks expected forwarding rules and subsequent packet-counter increases;
+this does not verify every possible OpenFlow rule field. All-pairs checks grow
+quadratically with host count, so a 500-host run is not a quick smoke test.
 
 Local checks, runnable from the repository root:
 
