@@ -20,8 +20,17 @@ from Helpers.environment import NetworkTestEnvironment, check_service_port_avail
 from Helpers.results import format_summary, BehaviorFailure
 from Helpers.host_pairs import select_host_pairs
 from Helpers.packet_observer import PacketObserver
+from Helpers.forwarding_tables import (
+    analyze_forwarding,
+    parse_flow_dump,
+    parse_port_dump,
+    probe_fields,
+    select_rule,
+)
 from cases.base import test_known_destination_forwarding as run_known_forwarding_case
 from cases.base import test_arp_and_ping as run_arp_and_ping_case
+from cases.base import test_unknown_destination_flooding as run_unknown_flooding_case
+from cases.runtime import test_runtime_block_and_unblock as run_runtime_policy_case
 import run_network_tests
 from run_network_tests import load_test_cases
 
@@ -389,7 +398,7 @@ class ConfigurableExperimentTests(unittest.TestCase):
     def test_bad_topologies_and_unknown_names_are_rejected(self):
         for data in [
             {"name": "duplicate", "host_count": 3, "host_ports": [1, 1, 3]},
-            {"name": "disconnected", "host_count": 3, "switches": ["s1", "s2"]},
+            {"name": "missing_switches", "host_count": 3, "switches": []},
             {"name": "loop", "host_count": 3, "switch_links": [["s1", 4, "s1", 5]]},
             {"name": "bad_roles", "host_count": 3, "roles": {"source": "h2"}},
         ]:
@@ -473,9 +482,10 @@ class ConfigurableExperimentTests(unittest.TestCase):
             self.assertEqual(
                 environment.forwarding_packet_counts("h1", "h2"), {"s1": 7, "s2": 8}
             )
-            dumps["s2"] = dumps["s2"].replace("in_port=3", "in_port=2")
-            with self.assertRaises(AssertionError):
-                environment.establish_cached_forwarding("h1", "h2")
+            # Equivalent priorities/matches must not be tied to the reference's
+            # priority-1 layout when selecting cached counters.
+            dumps["s2"] = dumps["s2"].replace("priority=1,in_port=3,", "priority=25,")
+            self.assertEqual(environment.forwarding_packet_counts("h1", "h2")["s2"], 8)
 
     def test_runner_executes_complete_matrix_and_resets_after_failure(self):
         started, cleaned = [], []
@@ -523,9 +533,24 @@ class ConfigurableExperimentTests(unittest.TestCase):
             summary = json.loads(
                 next(Path(temporary).glob("*/summary.json")).read_text()
             )
-            self.assertEqual(len(started), 45)
+            self.assertEqual(
+                len(started),
+                9
+                * len(
+                    load_configurations(
+                        VALIDATION_DIRECTORY / "network_configurations.json"
+                    )
+                ),
+            )
             self.assertEqual(started, cleaned)
-            self.assertEqual(sum(row["status"] == "FAIL" for row in summary), 5)
+            self.assertEqual(
+                sum(row["status"] == "FAIL" for row in summary),
+                len(
+                    load_configurations(
+                        VALIDATION_DIRECTORY / "network_configurations.json"
+                    )
+                ),
+            )
             self.assertIn("two_switches_4_hosts", output.getvalue())
             self.assertIn("1 FAIL", format_summary(summary))
             self.assertTrue(next(Path(temporary).glob("*/summary.csv")).is_file())
@@ -571,7 +596,15 @@ class SampledDevelopmentRunTests(unittest.TestCase):
             "--plan",
         ]
         plan = json.loads(subprocess.check_output(command, text=True, timeout=10))
-        self.assertEqual(plan["experiment_count"], 45)
+        self.assertEqual(
+            plan["experiment_count"],
+            9
+            * len(
+                load_configurations(
+                    VALIDATION_DIRECTORY / "network_configurations.json"
+                )
+            ),
+        )
         self.assertEqual(plan["profile"], "sampled")
         self.assertEqual(
             plan["host_pair_coverage"]["deep_tree_7_switches_8_hosts"],
@@ -607,6 +640,7 @@ class SampledDevelopmentRunTests(unittest.TestCase):
         environment = SimpleNamespace(
             host_names=["h1", "h2", "h3", "h4"],
             selected_host_pairs=lambda: pairs,
+            configuration=NetworkConfiguration({"name": "test", "host_count": 4}),
             learn_host_locations=Mock(),
             establish_cached_forwarding=Mock(),
             forwarding_packet_counts=Mock(
@@ -631,12 +665,14 @@ class SampledDevelopmentRunTests(unittest.TestCase):
         environment = SimpleNamespace(
             host_names=hosts,
             selected_host_pairs=lambda: pairs,
-            assert_ping_delivery=Mock(),
+            assert_expected_ping_delivery=Mock(),
+            assert_forwarding_table_behavior=Mock(),
+            configuration=SimpleNamespace(is_connected=True),
             network=SimpleNamespace(pingAll=Mock(return_value=0)),
             recorded_events=[],
         )
         run_arp_and_ping_case(environment)
-        self.assertEqual(environment.assert_ping_delivery.call_count, 2)
+        self.assertEqual(environment.assert_expected_ping_delivery.call_count, 2)
         environment.network.pingAll.assert_not_called()
         roles = {"source": "h1", "destination": "h2", "other": "h3"}
         environment.selected_host_pairs = lambda: select_host_pairs(hosts, roles)
@@ -673,6 +709,301 @@ class SampledDevelopmentRunTests(unittest.TestCase):
                 )
 
 
+class DisconnectedNetworkTests(unittest.TestCase):
+    """Separate physical isolation from blocking and from faulty allowed forwarding."""
+
+    def configuration(self, name="isolated_host_2_switches_4_hosts"):
+        return load_configurations(
+            VALIDATION_DIRECTORY / "network_configurations.json", [name]
+        )[0]
+
+    def environment(self, configuration=None, case=None, evidence_directory=None):
+        configuration = configuration or self.configuration()
+        return NetworkTestEnvironment(
+            SimpleNamespace(
+                network_configuration=configuration,
+                stock_controller_mode=False,
+                max_host_pairs=0,
+                pair_seed=0,
+            ),
+            case or {"scenario": "known"},
+            evidence_directory or Path("unused"),
+        )
+
+    def test_isolated_host_has_no_physical_path_but_other_hosts_still_connect(self):
+        configuration = self.configuration()
+        self.assertFalse(configuration.is_connected)
+        self.assertEqual(configuration.connected_hosts("h1"), ["h1", "h2", "h3"])
+        self.assertEqual(configuration.connected_hosts("h4"), ["h4"])
+        self.assertFalse(configuration.hosts_connected("h1", "h4"))
+        self.assertEqual(configuration.path("s1", "s2"), [])
+        self.assertIsNone(configuration.port_toward_host("s1", "h4"))
+        self.assertEqual(configuration.port_toward_host("s2", "h4"), 1)
+        self.assertTrue(configuration.hosts_connected("h1", "h2"))
+
+    def test_partitioned_network_has_allowed_paths_in_both_components(self):
+        configuration = self.configuration("partitioned_4_switches_6_hosts")
+        self.assertEqual(configuration.connected_hosts("h2"), ["h1", "h2", "h3"])
+        self.assertEqual(configuration.connected_hosts("h5"), ["h4", "h5", "h6"])
+        self.assertEqual(configuration.path("s1", "s2"), ["s1", "s2"])
+        self.assertEqual(configuration.path("s3", "s4"), ["s3", "s4"])
+        self.assertEqual(configuration.path("s1", "s4"), [])
+        self.assertEqual(configuration.port_toward_host("s3", "h5"), 5)
+
+    def test_allowing_partitions_does_not_allow_cycles(self):
+        with self.assertRaisesRegex(ValueError, "loop-free"):
+            NetworkConfiguration(
+                {
+                    "name": "cycle",
+                    "host_count": 3,
+                    "switches": ["s1", "s2", "s3"],
+                    "host_ports": [10, 11, 12],
+                    "switch_links": [
+                        ["s1", 1, "s2", 1],
+                        ["s2", 2, "s3", 1],
+                        ["s3", 2, "s1", 2],
+                    ],
+                }
+            )
+        configurations = load_configurations(
+            VALIDATION_DIRECTORY / "network_configurations.json"
+        )
+        self.assertTrue(
+            all(configuration.is_connected for configuration in configurations[:5])
+        )
+
+    def test_policy_expectations_are_independent_of_controller_reported_state(self):
+        environment = self.environment()
+        environment.get_controller_status = Mock(
+            side_effect=AssertionError(
+                "Controller state must not define the expectation"
+            )
+        )
+        environment.send_controller_request = Mock(return_value={"complete": True})
+        self.assertEqual(
+            environment.delivery_expectation("h1", "h2"),
+            {"allowed": True, "reason": "connected_and_allowed"},
+        )
+        for blocked in (["h2", "h4"], []):
+            environment.replace_destination_blocklist(blocked)
+            self.assertEqual(
+                environment.delivery_expectation("h1", "h4"),
+                {"allowed": False, "reason": "no_physical_path"},
+            )
+            self.assertEqual(
+                environment.delivery_expectation("h1", "h2")["allowed"],
+                "h2" not in blocked,
+            )
+        environment.get_controller_status.assert_not_called()
+        environment.assert_destination_delivery = Mock()
+        environment.assert_partition_isolation("h1")
+        environment.assert_destination_delivery.assert_called_once_with(
+            "h1", "h4", False
+        )
+
+    def test_unknown_flooding_expects_copies_only_inside_source_component(self):
+        configuration = self.configuration()
+        environment = SimpleNamespace(
+            options=SimpleNamespace(stock_controller_mode=True),
+            roles=configuration.roles,
+            configuration=configuration,
+            host_names=configuration.host_names,
+            assert_packet_delivery=Mock(),
+        )
+        run_unknown_flooding_case(environment)
+        self.assertEqual(
+            environment.assert_packet_delivery.call_args.kwargs["expected_delivery"],
+            {"h2": True, "h3": True, "h4": False},
+        )
+
+    def test_unreachable_pairs_do_not_demand_impossible_cached_rules(self):
+        configuration = self.configuration()
+        environment = SimpleNamespace(
+            host_names=configuration.host_names,
+            configuration=configuration,
+            selected_host_pairs=lambda: [("h1", "h2"), ("h1", "h4"), ("h4", "h1")],
+            learn_host_locations=Mock(),
+            establish_cached_forwarding=Mock(),
+            forwarding_packet_counts=Mock(side_effect=[{"s1": 0}, {"s1": 3}]),
+            assert_packet_delivery=Mock(),
+            assert_expected_destination_delivery=Mock(),
+            recorded_events=[],
+        )
+        run_known_forwarding_case(environment)
+        environment.establish_cached_forwarding.assert_called_once_with("h1", "h2")
+        self.assertEqual(
+            [
+                call.args
+                for call in environment.assert_expected_destination_delivery.call_args_list
+            ],
+            [("h1", "h4"), ("h4", "h1")],
+        )
+        real_environment = self.environment()
+        with self.assertRaisesRegex(ValueError, "connected, allowed"):
+            real_environment.establish_cached_forwarding("h1", "h4")
+        with self.assertRaisesRegex(ValueError, "connected, allowed"):
+            real_environment.forwarding_packet_counts("h1", "h4")
+
+    def test_learning_waits_only_for_hosts_whose_broadcasts_can_reach_switch(self):
+        environment = self.environment()
+        environment.send_test_packets = Mock()
+        environment.wait_for_controller_updates = Mock()
+        environment.get_controller_status = Mock(
+            return_value={
+                "learned": {
+                    "1": {
+                        host_mac_address("h1"): 1,
+                        host_mac_address("h2"): 2,
+                        host_mac_address("h3"): 3,
+                    },
+                    "2": {host_mac_address("h4"): 1},
+                }
+            }
+        )
+
+        def assert_ready(condition):
+            self.assertTrue(condition())
+
+        with patch("Helpers.environment.wait_for_condition", side_effect=assert_ready):
+            environment.learn_host_locations()
+        self.assertEqual(environment.send_test_packets.call_count, 4)
+        self.assertEqual(environment.get_controller_status.call_count, 1)
+        expected = environment.recorded_events[-1]["expected_learned_locations"]
+        self.assertNotIn(host_mac_address("h4"), expected["1"])
+        self.assertEqual(expected["2"], {host_mac_address("h4"): 1})
+
+    def test_partitioned_ping_compares_each_pair_instead_of_requiring_zero_loss(self):
+        environment = self.environment()
+        environment.network = SimpleNamespace(
+            pingAll=Mock(
+                side_effect=AssertionError(
+                    "Zero-loss pingAll is invalid for partitions"
+                )
+            )
+        )
+        environment.assert_ping_delivery = Mock()
+        environment.assert_forwarding_table_behavior = Mock()
+        run_arp_and_ping_case(environment)
+        self.assertEqual(environment.assert_ping_delivery.call_count, 12)
+        observed = {
+            call.args[:2]: call.args[2]
+            for call in environment.assert_ping_delivery.call_args_list
+        }
+        self.assertTrue(observed[("h1", "h2")])
+        self.assertFalse(observed[("h1", "h4")])
+        self.assertFalse(observed[("h4", "h1")])
+        environment.network.pingAll.assert_not_called()
+        environment.expected_blocked_hosts = {"h1"}
+        environment.assert_expected_ping_delivery("h1", "h2")
+        self.assertFalse(environment.assert_ping_delivery.call_args.args[2])
+
+    def test_expected_ping_failure_does_not_accept_execution_errors_or_actual_delivery(
+        self,
+    ):
+        for returncode, error_type in (
+            (1, None),
+            (0, BehaviorFailure),
+            (2, RuntimeError),
+        ):
+            with self.subTest(
+                returncode=returncode
+            ), tempfile.TemporaryDirectory() as temporary:
+                process = SimpleNamespace(
+                    returncode=returncode,
+                    communicate=lambda timeout: (b"ping evidence", None),
+                )
+                node = SimpleNamespace(
+                    popen=lambda *args, **kwargs: process, IP=lambda: "10.0.0.4"
+                )
+                observer = PacketObserver()
+                observer.network = SimpleNamespace(get=lambda name: node)
+                observer.evidence_directory = Path(temporary)
+                observer.recorded_events = []
+                if error_type is None:
+                    observer.assert_ping_delivery("h1", "h4", False)
+                else:
+                    with self.assertRaises(error_type):
+                        observer.assert_ping_delivery("h1", "h4", False)
+
+    def test_policy_and_movement_do_not_use_disconnection_as_a_positive_control(self):
+        configuration = self.configuration()
+        configuration.roles = {"source": "h1", "destination": "h4", "other": "h2"}
+        environment = self.environment(
+            configuration, {"scenario": "runtime", "blocked": "$destination"}
+        )
+        with self.assertRaisesRegex(ValueError, "positive controls"):
+            environment.validate_case_connectivity()
+        environment.test_case = {"scenario": "known"}
+        environment.validate_case_connectivity()
+
+    def test_runtime_rechecks_isolation_before_blocking_and_after_each_unblock(self):
+        checks = []
+        environment = SimpleNamespace(
+            roles={"source": "h1", "destination": "h2", "other": "h3"},
+            test_case={"blocked": "h2"},
+            learn_host_locations=Mock(),
+            establish_cached_forwarding=Mock(),
+            save_network_snapshot=Mock(),
+            assert_destination_delivery=Mock(),
+            blocked=set(),
+        )
+        environment.replace_destination_blocklist = lambda hosts: setattr(
+            environment, "blocked", set(hosts)
+        )
+        environment.assert_partition_isolation = lambda source: checks.append(
+            (source, set(environment.blocked))
+        )
+        run_runtime_policy_case(environment)
+        self.assertEqual(checks, [("h1", set()), ("h1", set()), ("h1", set())])
+
+    def test_isolated_host_is_actually_built_on_a_separate_switch(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            environment = self.environment(evidence_directory=Path(temporary))
+            environment.options.ryu_manager = "ryu-manager"
+            environment.options.openflow_port = 6653
+            environment.options.controller_api_port = 8080
+            environment.options.controller_path = str(
+                VALIDATION_DIRECTORY / "controller_variants/reference_controller.py"
+            )
+            network = Mock()
+            network.hosts = []
+
+            def add_host(name, **options):
+                host = SimpleNamespace(name=name, cmd=Mock())
+                network.hosts.append(host)
+                return host
+
+            network.addHost.side_effect = add_host
+            switches = {name: object() for name in ("s1", "s2")}
+            network.addSwitch.side_effect = lambda name, **options: switches[name]
+            environment.send_controller_request = Mock(
+                return_value={"switches": [1, 2], "errors": []}
+            )
+            environment.get_controller_status = Mock(
+                return_value={"switches": [1, 2], "errors": []}
+            )
+            environment.wait_for_controller_updates = Mock()
+            environment.save_network_snapshot = Mock()
+            process = Mock()
+            process.poll.return_value = None
+            with patch("Helpers.environment.Mininet", return_value=network), patch(
+                "Helpers.environment.subprocess.Popen", return_value=process
+            ), patch("Helpers.environment.socket.create_connection"):
+                try:
+                    environment.start_network_and_controller()
+                    self.assertEqual(network.addHost.call_count, 4)
+                    self.assertEqual(network.addLink.call_count, 4)
+                    host, switch = network.addLink.call_args_list[-1].args
+                    self.assertEqual(host.name, "h4")
+                    self.assertIs(switch, switches["s2"])
+                    self.assertEqual(
+                        network.addLink.call_args_list[-1].kwargs, {"port2": 1}
+                    )
+                finally:
+                    process.poll.return_value = 0
+                    environment.cleanup()
+
+
 class ControllerPortCheckTests(unittest.TestCase):
     """Exercise TCP port checks with real, bounded loopback connections."""
 
@@ -707,6 +1038,260 @@ class ControllerPortCheckTests(unittest.TestCase):
                 plain_probe.bind(address)
         check_service_port_available(address[1])
         check_service_port_available(address[1])
+
+
+class ForwardingTableAnalysisTests(unittest.TestCase):
+    """Network-wide table properties, independent of controller implementation."""
+
+    def setUp(self):
+        self.configuration = NetworkConfiguration(
+            {
+                "name": "branches",
+                "host_count": 3,
+                "switches": ["s1", "s2", "s3"],
+                "host_switches": ["s1", "s2", "s3"],
+                "host_ports": [1, 1, 1],
+                "switch_links": [["s1", 2, "s2", 2], ["s1", 3, "s3", 2]],
+            }
+        )
+        self.ports = {
+            "s1": {1: {}, 2: {}, 3: {}},
+            "s2": {1: {}, 2: {}},
+            "s3": {1: {}, 2: {}},
+        }
+        for ports in self.ports.values():
+            for port in ports:
+                ports[port] = {"config": "0", "state": "0"}
+        self.dumps = {
+            "s1": "priority=10,in_port=1 actions=output:2",
+            "s2": "priority=20,in_port=2 actions=output:1",
+            "s3": "priority=0 actions=drop",
+        }
+
+    def analyze(self):
+        return analyze_forwarding(
+            self.configuration, self.dumps, "h1", "h2", self.ports
+        )
+
+    def test_drop_at_either_switch_is_equally_valid(self):
+        for dropping_switch in ("s1", "s2"):
+            with self.subTest(switch=dropping_switch):
+                original = self.dumps[dropping_switch]
+                self.dumps[
+                    dropping_switch
+                ] += "\npriority=500,dl_dst=00:00:00:00:00:02 actions=drop"
+                result = self.analyze()
+                self.assertEqual(result["verdict"], "UNREACHABLE")
+                self.assertEqual(result["trace"][-1]["switch"], dropping_switch)
+                self.dumps[dropping_switch] = original
+
+    def test_packet_observation_automatically_invokes_network_table_check(self):
+        for expected in (True, False):
+            with self.subTest(
+                expected=expected
+            ), tempfile.TemporaryDirectory() as temporary:
+                observer = PacketObserver()
+                observer.evidence_directory = Path(temporary)
+                observer.options = SimpleNamespace(observation_seconds=0)
+                observer.observation_number = 0
+                observer.packet_identifier = 100
+                observer.capture_processes = []
+                observer.recorded_events = []
+                observer.send_test_packets = Mock()
+                observer.assert_forwarding_table_behavior = Mock()
+
+                def start_capture(*args, **kwargs):
+                    kwargs["stderr"].write(
+                        "listening on h2-eth0\n0 packets dropped by kernel\n"
+                    )
+                    kwargs["stderr"].flush()
+                    return SimpleNamespace(poll=lambda: None, returncode=0)
+
+                observer.network = SimpleNamespace(
+                    get=lambda name: SimpleNamespace(
+                        defaultIntf=lambda: "h2-eth0", popen=start_capture
+                    )
+                )
+                with patch("Helpers.packet_observer.stop_process"), patch(
+                    "Helpers.packet_observer.run_command",
+                    return_value="packet\n" * (3 if expected else 0),
+                ):
+                    observer.assert_packet_delivery("h1", "h2", ["h2"], expected)
+                observer.assert_forwarding_table_behavior.assert_called_once_with(
+                    "h1", "h2", expected
+                )
+
+    def test_a_forwarding_path_through_two_switches_is_reachable(self):
+        result = self.analyze()
+        self.assertEqual(result["verdict"], "REACHABLE")
+        self.assertEqual([step["switch"] for step in result["trace"]], ["s1", "s2"])
+
+    def test_drop_on_one_branch_does_not_hide_a_delivering_branch(self):
+        self.dumps["s1"] = "priority=10 actions=output:2,output:3"
+        result = self.analyze()
+        self.assertTrue(result["reachable"])
+        self.assertEqual(
+            {step["switch"] for step in result["trace"]}, {"s1", "s2", "s3"}
+        )
+        self.dumps["s2"] = "priority=20 actions=drop"
+        self.assertEqual(self.analyze()["verdict"], "UNREACHABLE")
+
+    def test_higher_priority_overrides_lower_priority_independent_of_dump_order(self):
+        self.dumps["s1"] += "\npriority=300,icmp,nw_dst=10.0.0.2 actions=drop"
+        self.assertEqual(self.analyze()["verdict"], "UNREACHABLE")
+        self.dumps[
+            "s1"
+        ] += "\npriority=400,dl_src=00:00:00:00:00:01/ff:ff:ff:ff:ff:ff,nw_dst=10.0.0.0/24 actions=2"
+        self.assertEqual(self.analyze()["verdict"], "REACHABLE")
+
+    def test_flood_follows_every_eligible_port_and_respects_no_flood(self):
+        self.dumps["s1"] = "priority=20 actions=FLOOD"
+        self.assertEqual(self.analyze()["verdict"], "REACHABLE")
+        self.ports["s1"][2]["config"] = "NO_FLOOD"
+        self.assertEqual(self.analyze()["verdict"], "UNREACHABLE")
+        self.dumps["s1"] = "priority=20 actions=ALL"
+        self.assertEqual(self.analyze()["verdict"], "REACHABLE")
+
+    def test_numeric_output_to_ingress_is_suppressed_but_in_port_can_loop(self):
+        self.dumps["s2"] = "priority=20 actions=output:2"
+        self.assertEqual(self.analyze()["verdict"], "UNREACHABLE")
+        self.dumps["s2"] = "priority=20 actions=IN_PORT"
+        self.dumps["s1"] = "priority=10 actions=2,3,IN_PORT"
+        result = self.analyze()
+        self.assertEqual(result["verdict"], "INCONCLUSIVE")
+        self.assertTrue(any("loop" in reason for reason in result["unresolved"]))
+
+    def test_controller_and_unsupported_actions_are_not_treated_as_drops(self):
+        for actions in (
+            "CONTROLLER:65535",
+            "NORMAL",
+            "group:1",
+            "goto_table:1",
+            "mod_dl_dst:00:00:00:00:00:02,2",
+        ):
+            with self.subTest(actions=actions):
+                self.dumps["s2"] = "priority=20 actions=" + actions
+                result = self.analyze()
+                self.assertEqual(result["verdict"], "INCONCLUSIVE")
+                self.assertTrue(result["unresolved"])
+
+    def test_unknown_match_is_conservative_only_if_it_could_override(self):
+        self.dumps["s1"] += "\npriority=100,reg0=1 actions=drop"
+        self.assertEqual(self.analyze()["verdict"], "INCONCLUSIVE")
+        self.dumps["s1"] = self.dumps["s1"].replace("priority=100", "priority=1")
+        self.assertEqual(self.analyze()["verdict"], "REACHABLE")
+        self.dumps["s1"] += "\npriority=200,tcp,reg0=1 actions=drop"
+        self.assertEqual(self.analyze()["verdict"], "REACHABLE")
+
+    def test_equal_priority_overlap_is_not_arbitrarily_resolved(self):
+        self.dumps["s1"] += "\npriority=10,dl_dst=00:00:00:00:00:02 actions=drop"
+        self.assertEqual(self.analyze()["verdict"], "INCONCLUSIVE")
+
+    def test_port_state_missing_down_and_unmapped_outputs(self):
+        self.ports["s1"][2]["state"] = "LINK_DOWN"
+        self.assertEqual(self.analyze()["verdict"], "UNREACHABLE")
+        del self.ports["s1"][2]
+        self.assertEqual(self.analyze()["verdict"], "INCONCLUSIVE")
+        self.dumps["s1"] = "priority=10 actions=output:99"
+        self.ports["s1"][99] = {"config": "0", "state": "0"}
+        self.assertEqual(self.analyze()["verdict"], "INCONCLUSIVE")
+
+    def test_disconnected_components_cannot_deliver_through_flooding(self):
+        configuration = NetworkConfiguration(
+            {
+                "name": "islands",
+                "host_count": 3,
+                "switches": ["s1", "s2"],
+                "host_switches": ["s1", "s1", "s2"],
+                "host_ports": [1, 2, 1],
+            }
+        )
+        result = analyze_forwarding(
+            configuration,
+            {"s1": "priority=0 actions=flood", "s2": "priority=0 actions=flood"},
+            "h1",
+            "h3",
+            {"s1": self.ports["s2"], "s2": {1: self.ports["s2"][1]}},
+        )
+        self.assertEqual(result["verdict"], "UNREACHABLE")
+
+    def test_malformed_dump_is_inconclusive_and_real_metadata_is_not_a_match(self):
+        self.dumps["s1"] = "not a flow dump"
+        self.assertEqual(self.analyze()["verdict"], "INCONCLUSIVE")
+        rules = parse_flow_dump(
+            "OFPST_FLOW reply (OF1.3) (xid=0x2):\n cookie=0x1, duration=2.1s, table=0, n_packets=5, n_bytes=200, idle_timeout=0, priority=25,icmp,in_port=1 actions=2"
+        )
+        rule, reason = select_rule(
+            rules, dict(probe_fields(self.configuration, "h1", "h2"), in_port=1)
+        )
+        self.assertIsNone(reason)
+        self.assertEqual(rule["packets"], 5)
+
+    def test_port_dump_does_not_overwrite_last_physical_port_with_local_flags(self):
+        self.assertEqual(
+            parse_port_dump(
+                " 2(s1-eth2): addr:00:00:00:00:00:02\n config: 0\n state: LIVE\n LOCAL(s1): addr:00:00:00:00:00:01\n config: PORT_DOWN\n state: LINK_DOWN"
+            ),
+            {2: {"config": "0", "state": "LIVE"}},
+        )
+
+    def test_live_environment_saves_analysis_accepts_late_drop_and_rejects_delivery(
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temporary:
+            environment = NetworkTestEnvironment(
+                SimpleNamespace(network_configuration=self.configuration),
+                {"scenario": "runtime", "blocked": "h2"},
+                Path(temporary),
+            )
+            environment.wait_for_controller_updates = Mock()
+
+            def command_output(command):
+                switch = command[-1]
+                if "dump-flows" in command:
+                    return self.dumps[switch]
+                return "\n".join(
+                    " %d(%s-eth%d): addr:00:00:00:00:00:01\n config: 0\n state: 0"
+                    % (port, switch, port)
+                    for port in self.ports[switch]
+                )
+
+            with patch("Helpers.environment.run_command", side_effect=command_output):
+                self.dumps[
+                    "s2"
+                ] += "\npriority=100,dl_dst=00:00:00:00:00:02 actions=drop"
+                result = environment.assert_forwarding_table_behavior("h1", "h2", False)
+                self.assertEqual(result["status"], "PASS")
+                self.assertTrue(list(Path(temporary).glob("*/analysis.json")))
+                self.dumps["s2"] = "priority=20 actions=1"
+                with self.assertRaises(BehaviorFailure) as failure:
+                    environment.assert_forwarding_table_behavior("h1", "h2", False)
+                self.assertEqual(
+                    failure.exception.code, "forwarding_table_reachability"
+                )
+                self.dumps["s2"] = "priority=20 actions=CONTROLLER:65535"
+                self.assertEqual(
+                    environment.assert_forwarding_table_behavior("h1", "h2", False)[
+                        "status"
+                    ],
+                    "INCONCLUSIVE",
+                )
+                summary = format_summary(
+                    [
+                        {
+                            "configuration": "branches",
+                            "stage": "base",
+                            "status": "PASS",
+                            "forwarding_table_checks": {
+                                "PASS": 1,
+                                "FAIL": 0,
+                                "INCONCLUSIVE": 1,
+                            },
+                        }
+                    ]
+                )
+                self.assertIn("1 inconclusive", summary)
+                self.assertIn("not verified", summary)
 
 
 if __name__ == "__main__":

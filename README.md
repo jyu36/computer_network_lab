@@ -17,6 +17,7 @@ case; movement and policy-update sequences preserve state within a case.
 | `network_validation/Helpers/environment.py` | Network lifecycle, API and switch operations |
 | `network_validation/Helpers/packet_observer.py` | Probe execution and packet capture checks |
 | `network_validation/Helpers/topology.py` | Configuration validation and expected paths |
+| `network_validation/Helpers/forwarding_tables.py` | Network-wide interpretation of installed rules for concrete ICMP probes |
 | `network_validation/Helpers/results.py` | Grouped console results and JSON/CSV summaries |
 | `network_validation/Helpers/processes.py` | Bounded subprocess and readiness helpers |
 | `network_validation/Helpers/send_test_packets.py` | Generates tagged ARP and ICMP packets |
@@ -83,8 +84,8 @@ The previous CLI spellings such as `--stock-base` and `--cases` remain aliases.
 
 ## Coverage and deliberate bugs
 
-The default expanded-controller run selects all nine cases across all five network
-configurations (45 independent experiments). `--configuration single_switch_3_hosts`
+The default expanded-controller run selects all nine cases across all seven network
+configurations (63 independent experiments). `--configuration single_switch_3_hosts`
 selects one fixture; `--case-id known_destination_forwarding` selects one case. `--plan`
 prints the experiment matrix without requiring Linux. `--suite full` is the
 default; the original stock controller defaults to the base suite.
@@ -105,6 +106,41 @@ Blocking cases check destination blocking before and after learning. Movement ca
 movement by renumbering a host's OVS port to an unused port on the same switch and check policy preservation.
 Runtime cases check repeated block/unblock updates on cached and new paths and
 invalid updates. These are sequence checks, not a measured coverage percentage.
+
+Two fixtures include physical disconnection. `isolated_host_2_switches_4_hosts`
+places h1/h2/h3 on s1 and h4 alone on s2, with no inter-switch link.
+`partitioned_4_switches_6_hosts` has two disconnected trees: h1/h2/h3 on s1/s2
+and h4/h5/h6 on s3/s4. Hosts retain working interfaces to their access switches.
+Within a component, allowed traffic should arrive; between components, it should
+not arrive even after unblocking. Flooding must stay within the source component.
+The learning checks expect a switch to learn only hosts in its own component.
+Partitioned ping runs compare each pair with its expected connectivity, rather
+than requiring zero loss across disconnected groups.
+
+Expected delivery comes from the configured physical graph and the policy the
+test requested, independently of controller-reported state. Policy and movement
+actors must share a connected component so their positive controls remain
+meaningful; use the base suite when a custom configuration cannot provide those
+actors. Runtime cases also probe disconnected destinations before blocking and
+after each unblock.
+
+After successful packet observations, the harness independently reads each
+switch's flows and live port descriptions. The forwarding-table checker follows
+the highest-priority matching table-0 rule from the source through every selected
+output branch. A drop at the first switch or a later switch is equally valid for
+blocking. Any definite branch delivering to a blocked destination fails the case.
+It supports concrete untagged IPv4 ICMP echo requests, ingress/MAC/IP/protocol
+matches, physical output, IN_PORT, FLOOD/ALL and drops. Known-forwarding counters
+use the selected rule rather than requiring priority 1 or a particular match layout.
+
+Each observation saves raw flows, port descriptions and an `analysis.json` branch
+trace under its case's `forwarding_tables_*` directory. Summaries separately count
+verified, failed and inconclusive table checks. Controller actions, unsupported
+matches/actions (including groups and multi-table pipelines), ambiguous priority
+ties and unresolved loops are inconclusive, not evidence of a drop. A case PASS
+with inconclusive tables means its other assertions passed; table verification is
+incomplete. Reads occur after a controller barrier, with no concurrent test sends,
+but are sequential snapshots rather than an atomic snapshot of the whole network.
 
 The prepared variants come from the AI-assisted expanded template, not the
 original controller copy. `reference_controller.py` is an intended passing
@@ -138,13 +174,17 @@ bounded observation window, one second after sending by default.
 The original controller passed three base cases in one reported Ubuntu run.
 The restructured harness and all expanded configurations still need Ubuntu
 integration validation. Local tooling checks cannot establish real forwarding
-correctness. The five fixtures include single-switch networks, a two-switch network, a
-three-switch branching tree and a seven-switch deeper tree; supported configurations
-are connected, loop-free switch trees with at least three hosts. Movement
+correctness. The seven fixtures include single-switch networks, a two-switch network, a
+three-switch branching tree, a seven-switch deeper tree, an isolated-host network
+and a partitioned network. Supported configurations are loop-free switch forests
+with at least three hosts. Every host attaches to a switch; disconnected components
+have no physical link between them. Movement
 changes a port on the same switch. IPv6, cyclic topologies, cross-switch host
-reattachment, performance guarantees and formal correctness are outside scope.
-The known-destination forwarding case checks expected forwarding rules and subsequent packet-counter increases;
-this does not verify every possible OpenFlow rule field. All-pairs checks grow
+reattachment, dynamic link failures, performance guarantees and formal correctness are outside scope.
+The table checker evaluates particular concrete packets in a snapshot; it does not
+prove correctness for all packet headers, controller behavior or future states.
+The known-destination case also checks subsequent packet-counter increases.
+All-pairs checks grow
 quadratically with host count, so a 500-host run is not a quick smoke test.
 
 Local checks, runnable from the repository root:

@@ -310,6 +310,15 @@ def main():
                     test_result.update(status="ERROR", cleanup_error=repr(error))
                     cleanup_failed = True
             test_result["duration_seconds"] = round(time.monotonic() - case_started, 3)
+            table_statuses = [
+                event["forwarding_table_check"]["status"]
+                for event in getattr(test_environment, "recorded_events", [])
+                if "forwarding_table_check" in event
+            ]
+            test_result["forwarding_table_checks"] = {
+                status: table_statuses.count(status)
+                for status in ("PASS", "FAIL", "INCONCLUSIVE")
+            }
             (case_evidence_directory / "result.json").write_text(
                 json.dumps(test_result, indent=2)
             )

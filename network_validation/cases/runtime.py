@@ -16,6 +16,7 @@ def test_runtime_block_and_unblock(environment):
             if host_name != blocked_host_name
         )
     )
+    environment.assert_partition_isolation(environment.roles["source"])
     environment.establish_cached_forwarding(
         environment.roles["source"], blocked_host_name
     )
@@ -33,6 +34,7 @@ def test_runtime_block_and_unblock(environment):
         blocked_host_name, environment.roles["source"]
     )
     environment.replace_destination_blocklist([])
+    environment.assert_partition_isolation(environment.roles["source"])
     environment.assert_destination_delivery(
         environment.roles["source"], blocked_host_name
     )
@@ -41,6 +43,7 @@ def test_runtime_block_and_unblock(environment):
         environment.roles["source"], blocked_host_name, False
     )
     environment.replace_destination_blocklist([])
+    environment.assert_partition_isolation(environment.roles["source"])
     environment.assert_destination_delivery(
         environment.roles["source"], blocked_host_name
     )

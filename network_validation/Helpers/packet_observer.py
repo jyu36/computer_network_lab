@@ -184,8 +184,20 @@ class PacketObserver:
                     receiver=receiver_host_name,
                 )
 
-    def assert_ping_delivery(self, source_host_name, destination_host_name):
-        """Check one directed ARP/ICMP round trip for a sampled ping run."""
+        if destination_host_name in receiver_host_names:
+            destination_should_receive = (
+                expected_delivery[destination_host_name]
+                if isinstance(expected_delivery, dict)
+                else expected_delivery
+            )
+            self.assert_forwarding_table_behavior(
+                source_host_name, destination_host_name, destination_should_receive
+            )
+
+    def assert_ping_delivery(
+        self, source_host_name, destination_host_name, expected_delivery=True
+    ):
+        """Compare one directed ping with expected reachability, preserving process errors."""
         source = self.network.get(source_host_name)
         destination = self.network.get(destination_host_name)
         child = source.popen(
@@ -209,16 +221,25 @@ class PacketObserver:
                     "source": source_host_name,
                     "destination": destination_host_name,
                     "returncode": child.returncode,
+                    "expected_delivery": expected_delivery,
                 }
             }
         )
-        if child.returncode == 1:
+        if child.returncode not in (0, 1):
+            raise RuntimeError("Ping process error: " + text)
+        if (child.returncode == 0) != expected_delivery:
             raise BehaviorFailure(
                 "ping_delivery",
-                "Ping failed: %s -> %s" % (source_host_name, destination_host_name),
+                "Ping %s -> %s: expected %s, observed %s"
+                % (
+                    source_host_name,
+                    destination_host_name,
+                    "delivery" if expected_delivery else "no delivery",
+                    "delivery" if child.returncode == 0 else "no delivery",
+                ),
+                expected=expected_delivery,
+                observed=child.returncode == 0,
             )
-        if child.returncode != 0:
-            raise RuntimeError("Ping process error: " + text)
 
     def assert_destination_delivery(
         self, source_host_name, destination_host_name, expected_delivery=True

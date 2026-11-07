@@ -16,6 +16,13 @@ def test_unknown_destination_flooding(environment):
             for host in environment.host_names
             if host != environment.roles["source"]
         ],
+        expected_delivery={
+            host: environment.configuration.hosts_connected(
+                environment.roles["source"], host
+            )
+            for host in environment.host_names
+            if host != environment.roles["source"]
+        },
         packet_count=1,
     )
 
@@ -25,6 +32,14 @@ def test_known_destination_forwarding(environment):
     environment.checkpoint = "learning"
     environment.learn_host_locations()
     for source_host_name, destination_host_name in environment.selected_host_pairs():
+        if not environment.configuration.hosts_connected(
+            source_host_name, destination_host_name
+        ):
+            environment.checkpoint = "partition_isolation"
+            environment.assert_expected_destination_delivery(
+                source_host_name, destination_host_name
+            )
+            continue
         observers = [
             host for host in environment.host_names if host != source_host_name
         ]
@@ -61,10 +76,12 @@ def test_arp_and_ping(environment):
     """Run the ping behavior check in a fresh experiment."""
     pairs = environment.selected_host_pairs()
     total = len(environment.host_names) * (len(environment.host_names) - 1)
-    if len(pairs) < total:
+    if len(pairs) < total or not environment.configuration.is_connected:
         for source, destination in pairs:
-            environment.assert_ping_delivery(source, destination)
+            environment.assert_expected_ping_delivery(source, destination)
         return
     packet_loss_percent = environment.network.pingAll(timeout="1")
     environment.recorded_events.append({"pingall_loss_percent": packet_loss_percent})
     assert packet_loss_percent == 0, "ARP/ICMP pingall loss: %s%%" % packet_loss_percent
+    for source, destination in pairs:
+        environment.assert_forwarding_table_behavior(source, destination, True)

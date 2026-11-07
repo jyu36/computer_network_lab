@@ -17,6 +17,13 @@ from cases import SCENARIOS
 from .results import BehaviorFailure
 from .packet_observer import PacketObserver
 from .processes import run_command, stop_process, wait_for_condition
+from .forwarding_tables import (
+    analyze_forwarding,
+    parse_flow_dump,
+    parse_port_dump,
+    probe_fields,
+    select_rule,
+)
 
 
 # Mininet is a Linux dependency. Keep these imports optional so listing cases
@@ -73,6 +80,12 @@ class NetworkTestEnvironment(PacketObserver):
             return value
 
         self.test_case = resolve(test_case)
+        self.expected_blocked_hosts = set(self.test_case.get("initial_blocked", []))
+        if (
+            self.test_case["scenario"] in {"static", "static_unknown", "move_block"}
+            and "initial_blocked" not in self.test_case
+        ):
+            self.expected_blocked_hosts = {self.test_case["blocked"]}
         self.network = self.controller_process = None
         self.checkpoint = "setup"
         self.observation_number = 0
@@ -80,6 +93,70 @@ class NetworkTestEnvironment(PacketObserver):
         self.recorded_events = []
         self.capture_processes = []
         self.controller_log_file = None
+        self.forwarding_table_check_number = 0
+
+    def assert_forwarding_table_behavior(self, source, destination, expected_delivery):
+        """Compare network-wide table semantics with an independent expectation.
+
+        Save raw snapshots and every explored branch. Inconclusive table evidence
+        is reported separately and never described as verified non-delivery.
+        """
+        self.wait_for_controller_updates()
+        self.forwarding_table_check_number += 1
+        directory = self.evidence_directory / (
+            "forwarding_tables_%03d_%s_to_%s"
+            % (self.forwarding_table_check_number, source, destination)
+        )
+        directory.mkdir()
+        dumps, ports = {}, {}
+        for switch in self.configuration.switch_names:
+            dumps[switch] = run_command(
+                ["ovs-ofctl", "-O", "OpenFlow13", "--no-names", "dump-flows", switch]
+            )
+            port_dump = run_command(
+                [
+                    "ovs-ofctl",
+                    "-O",
+                    "OpenFlow13",
+                    "--no-names",
+                    "dump-ports-desc",
+                    switch,
+                ]
+            )
+            (directory / (switch + ".flows.txt")).write_text(dumps[switch])
+            (directory / (switch + ".ports.txt")).write_text(port_dump)
+            ports[switch] = parse_port_dump(port_dump)
+        analysis = analyze_forwarding(
+            self.configuration, dumps, source, destination, ports
+        )
+        analysis["expected_delivery"] = expected_delivery
+        analysis["expectation"] = self.delivery_expectation(source, destination)
+        # A definite delivering branch disproves isolation even if another branch
+        # is unresolved. Otherwise unsupported branches cannot prove a result.
+        if analysis["reachable"] and not expected_delivery:
+            status = "FAIL"
+        elif analysis["verdict"] == "INCONCLUSIVE":
+            status = "INCONCLUSIVE"
+        else:
+            status = "PASS" if analysis["reachable"] == expected_delivery else "FAIL"
+        analysis["status"] = status
+        (directory / "analysis.json").write_text(json.dumps(analysis, indent=2))
+        self.recorded_events.append({"forwarding_table_check": analysis})
+        if status == "FAIL":
+            raise BehaviorFailure(
+                "forwarding_table_reachability",
+                "Installed rules %s -> %s: expected delivery=%s, observed %s; see %s"
+                % (
+                    source,
+                    destination,
+                    expected_delivery,
+                    analysis["verdict"],
+                    directory.name,
+                ),
+                expected=expected_delivery,
+                observed=analysis["reachable"],
+            )
+        return analysis
 
     def send_controller_request(
         self, method, api_endpoint, json_body=None, expected_http_status=200
@@ -134,16 +211,10 @@ class NetworkTestEnvironment(PacketObserver):
         # Pass it to the expanded controller through its environment; stock Ryu
         # does not implement this policy interface.
         controller_environment = os.environ.copy()
-        initial_blocked_macs = (
-            [host_mac_address(self.test_case["blocked"])]
-            if self.test_case["scenario"] in {"static", "static_unknown", "move_block"}
-            else []
-        )
-        if "initial_blocked" in self.test_case:
-            initial_blocked_macs = [
-                host_mac_address(host_name)
-                for host_name in self.test_case["initial_blocked"]
-            ]
+        self.validate_case_connectivity()
+        initial_blocked_macs = [
+            host_mac_address(host) for host in sorted(self.expected_blocked_hosts)
+        ]
         controller_environment.update(RAIN_BLOCKED=json.dumps(initial_blocked_macs))
         # Select bugs through separate controller files, not an inherited flag.
         controller_environment.pop("RAIN_BUG", None)
@@ -316,78 +387,151 @@ class NetworkTestEnvironment(PacketObserver):
         )
         return pairs
 
+    def validate_case_connectivity(self):
+        """Require real allowed paths for policy/movement positive controls."""
+        if self.test_case["scenario"] in {
+            "static",
+            "static_unknown",
+            "move",
+            "move_block",
+            "runtime",
+            "invalid",
+        }:
+            source = self.roles["source"]
+            required = set(self.roles.values()) | {
+                self.test_case[key]
+                for key in ("blocked", "moved")
+                if key in self.test_case
+            }
+            if any(
+                not self.configuration.hosts_connected(source, host)
+                for host in required
+            ):
+                raise ValueError(
+                    "Policy/movement cases require source, destination, other and selected actors in the same physical component. Use --suite base for configurations without these positive controls."
+                )
+
+    def delivery_expectation(self, source_host, destination_host):
+        """Derive one-way delivery from physical topology and intended policy."""
+        if not self.configuration.hosts_connected(source_host, destination_host):
+            return {"allowed": False, "reason": "no_physical_path"}
+        if destination_host in self.expected_blocked_hosts:
+            return {"allowed": False, "reason": "destination_blocked"}
+        return {"allowed": True, "reason": "connected_and_allowed"}
+
+    def assert_expected_destination_delivery(self, source_host, destination_host):
+        """Compare packet evidence with an independent topology/policy expectation."""
+        expectation = self.delivery_expectation(source_host, destination_host)
+        self.recorded_events.append(
+            {
+                "delivery_expectation": dict(
+                    expectation, source=source_host, destination=destination_host
+                )
+            }
+        )
+        self.assert_destination_delivery(
+            source_host, destination_host, expectation["allowed"]
+        )
+
+    def assert_expected_ping_delivery(self, source_host, destination_host):
+        """A ping needs both its request and response directions to be allowed."""
+        forward = self.delivery_expectation(source_host, destination_host)
+        reverse = self.delivery_expectation(destination_host, source_host)
+        allowed = forward["allowed"] and reverse["allowed"]
+        self.recorded_events.append(
+            {
+                "ping_expectation": {
+                    "source": source_host,
+                    "destination": destination_host,
+                    "allowed": allowed,
+                    "request": forward,
+                    "reply": reverse,
+                }
+            }
+        )
+        self.assert_ping_delivery(source_host, destination_host, allowed)
+        self.assert_forwarding_table_behavior(
+            source_host, destination_host, forward["allowed"]
+        )
+
+    def assert_partition_isolation(self, source_host):
+        """Check disconnected destinations remain unreachable after policy updates."""
+        for destination in self.host_names:
+            if not self.configuration.hosts_connected(source_host, destination):
+                self.assert_expected_destination_delivery(source_host, destination)
+
     def learn_host_locations(self, host_names=None):
-        """Send ARP traffic so the controller can learn host locations naturally."""
+        """Send ARP and require learning only where its broadcasts can physically go."""
         host_names = host_names or self.host_names
         for host_name in host_names:
-            self.send_test_packets(
-                host_name,
-                (
-                    self.host_names[0]
-                    if host_name != self.host_names[0]
-                    else self.host_names[1]
-                ),
-                packet_kind="arp",
-            )
+            peer = next(host for host in self.host_names if host != host_name)
+            self.send_test_packets(host_name, peer, packet_kind="arp")
         if not self.options.stock_controller_mode:
-            wait_for_condition(
-                lambda: all(
-                    self.get_controller_status()
-                    .get("learned", {})
-                    .get(str(int(switch[1:])), {})
-                    .get(host_mac_address(host_name))
-                    == self.configuration.port_toward_host(switch, host_name)
-                    for switch in self.configuration.switch_names
-                    for host_name in host_names
+            expected = {
+                str(int(switch[1:])): {
+                    host_mac_address(host): self.configuration.port_toward_host(
+                        switch, host
+                    )
+                    for host in host_names
+                    if self.configuration.port_toward_host(switch, host) is not None
+                }
+                for switch in self.configuration.switch_names
+            }
+            self.recorded_events.append({"expected_learned_locations": expected})
+
+            def locations_are_ready():
+                """Read status once per poll and compare only physically reachable hosts."""
+                learned = self.get_controller_status().get("learned", {})
+                return all(
+                    learned.get(switch, {}).get(mac) == port
+                    for switch, entries in expected.items()
+                    for mac, port in entries.items()
                 )
-            )
+
+            wait_for_condition(locations_are_ready)
         self.wait_for_controller_updates()
 
     def establish_cached_forwarding(self, source_host_name, destination_host_name):
         """Send traffic and check for a destination forwarding rule in OVS.
 
-        Checks priority, ingress match, destination match and the output port
-        on every switch in the source-to-destination path.
+        Network-wide semantics allow different priorities and equivalent matches.
+        Packet counters are checked separately for the matched cached rules.
         """
+        if not self.delivery_expectation(source_host_name, destination_host_name)[
+            "allowed"
+        ]:
+            raise ValueError(
+                "Cached-forwarding checks require a connected, allowed pair"
+            )
         self.assert_destination_delivery(source_host_name, destination_host_name)
         self.wait_for_controller_updates()
-        source_switch = self.configuration.attachments[source_host_name][0]
-        destination_switch = self.configuration.attachments[destination_host_name][0]
-        for switch in self.configuration.path(source_switch, destination_switch):
-            dump = run_command(["ovs-ofctl", "-O", "OpenFlow13", "dump-flows", switch])
-            ingress = self.configuration.port_toward_host(switch, source_host_name)
-            output = self.configuration.port_toward_host(switch, destination_host_name)
-            assert any(
-                "dl_dst=" + host_mac_address(destination_host_name) in entry
-                and re.search(r"\bin_port=%d(?:,|\s)" % ingress, entry)
-                and re.search(r"\bpriority=1(?:,|\s)", entry)
-                and re.search(r"actions=(?:output:)?%d(?:,|$)" % output, entry)
-                for entry in dump.splitlines()
-            ), "Required cached forwarding rule absent on %s: %s" % (switch, dump)
         self.save_network_snapshot(
             "cached_%s_%s" % (source_host_name, destination_host_name)
         )
 
     def forwarding_packet_counts(self, source_host_name, destination_host_name):
-        """Read counters for the exact learned rule on each switch in the path."""
+        """Read the highest-priority matching rule's counter on the physical path."""
+        if not self.delivery_expectation(source_host_name, destination_host_name)[
+            "allowed"
+        ]:
+            raise ValueError("Forwarding counters require a connected, allowed pair")
         source_switch = self.configuration.attachments[source_host_name][0]
         destination_switch = self.configuration.attachments[destination_host_name][0]
         counts = {}
         for switch in self.configuration.path(source_switch, destination_switch):
             dump = run_command(["ovs-ofctl", "-O", "OpenFlow13", "dump-flows", switch])
-            ingress = self.configuration.port_toward_host(switch, source_host_name)
-            matches = [
-                entry
-                for entry in dump.splitlines()
-                if "dl_dst=" + host_mac_address(destination_host_name) in entry
-                and re.search(r"\bin_port=%d(?:,|\s)" % ingress, entry)
-                and re.search(r"\bpriority=1(?:,|\s)", entry)
-            ]
-            assert len(matches) == 1, "Expected exactly one learned rule on " + switch
-            counter = re.search(r"\bn_packets=(\d+)", matches[0])
-            if counter is None:
-                raise RuntimeError("Missing OVS packet counter: " + matches[0])
-            counts[switch] = int(counter.group(1))
+            packet = probe_fields(
+                self.configuration, source_host_name, destination_host_name
+            )
+            packet["in_port"] = self.configuration.port_toward_host(
+                switch, source_host_name
+            )
+            rule, uncertainty = select_rule(parse_flow_dump(dump), packet)
+            if uncertainty or rule is None or rule["packets"] is None:
+                raise RuntimeError(
+                    "Cannot determine matched forwarding counter on " + switch
+                )
+            counts[switch] = rule["packets"]
         return counts
 
     def replace_destination_blocklist(self, blocked_host_names):
@@ -404,6 +548,7 @@ class NetworkTestEnvironment(PacketObserver):
         assert (
             completion_response.get("complete") is True
         ), "Policy response must acknowledge BarrierReply"
+        self.expected_blocked_hosts = set(blocked_host_names)
 
     def relocate_host_port(self, moved_host_name):
         """Move a host to an unused port on its switch and verify relearning."""

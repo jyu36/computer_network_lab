@@ -6,8 +6,12 @@ Do not give future feature requirements to base-generation agents.
 
 The harness launches one controller per case using `ryu-manager CONTROLLER.py`.
 OpenFlow 1.3 listens on loopback port 6653; HTTP listens on loopback port 8080.
-One switch has DPID 1. Hosts h1/h2/h3 initially use switch ports 1/2/3, MACs
-00:00:00:00:00:01/02/03 and IPv4 addresses 10.0.0.1/2/3.
+The selected network configuration determines switch DPIDs, host attachments and
+ports. Switch sN has DPID N; host hN has MAC address N encoded in 48 bits and
+IPv4 address 10.0.0.0 + N with a /16 prefix. The original three-host fixture
+uses s1 and ports 1/2/3. Configurations may contain several disconnected,
+loop-free switch components. Allowed hosts should communicate only when a
+physical path exists; unblocking cannot restore a missing physical link.
 
 ## Observability required at every stage
 
@@ -34,8 +38,9 @@ one leg of the round trip has a blocked destination.
 
 After a Packet-In reveals the same source MAC on a new port, update its location
 and invalidate stale forwarding rules. Existing destination policy still holds.
-The first draft simulates movement by changing the host-facing OVS OpenFlow
-port number to 4; the host's Linux interface, IP and MAC remain fixed. This
+The harness simulates movement by changing the host-facing OVS OpenFlow
+port number to an unused port on the same switch; the host's Linux interface,
+IP and MAC remain fixed. This
 tests port relocation, not cable failure, multi-switch roaming or topology repair.
 
 ## Change 3: runtime updates

@@ -13,7 +13,7 @@ def host_mac_address(host_name):
 
 
 class NetworkConfiguration:
-    """Describe a connected, loop-free switch graph and host attachments."""
+    """Describe a loop-free switch forest and host attachments, including islands."""
 
     def __init__(self, configuration):
         self.data = copy.deepcopy(configuration)
@@ -66,14 +66,22 @@ class NetworkConfiguration:
         for left, left_port, right, right_port in self.links:
             reserve(left, left_port)
             reserve(right, right_port)
-            if left == right or right in self.neighbors[left]:
-                raise ValueError("Switch links must form a tree")
+            if self.path(left, right):
+                raise ValueError("Switch links must be loop-free")
             self.neighbors[left][right] = left_port
             self.neighbors[right][left] = right_port
-        if len(self.links) != len(self.switch_names) - 1:
-            raise ValueError("Only connected, loop-free switch trees are supported")
+        self.component_by_switch = {}
         for switch in self.switch_names:
-            self.path(self.switch_names[0], switch)
+            if switch in self.component_by_switch:
+                continue
+            pending = [switch]
+            while pending:
+                member = pending.pop()
+                if member in self.component_by_switch:
+                    continue
+                self.component_by_switch[member] = switch
+                pending.extend(self.neighbors[member])
+        self.is_connected = len(set(self.component_by_switch.values())) == 1
         self.roles = dict(zip(("source", "destination", "other"), self.host_names[:3]))
         self.roles.update(configuration.get("roles", {}))
         if (
@@ -85,7 +93,7 @@ class NetworkConfiguration:
             )
 
     def path(self, source, destination):
-        """Find the unique switch path or reject disconnected configurations."""
+        """Return the unique switch path, or an empty list across partitions."""
         pending = [(source, [source])]
         visited = set()
         while pending:
@@ -98,13 +106,30 @@ class NetworkConfiguration:
                 for neighbor in self.neighbors[switch]
                 if neighbor not in visited
             )
-        raise ValueError("Disconnected switch graph")
+        return []
 
     def port_toward_host(self, switch, host):
         """Return the expected output port toward a host from any switch."""
         attached_switch, host_port = self.attachments[host]
         path = self.path(switch, attached_switch)
+        if not path:
+            return None
         return host_port if len(path) == 1 else self.neighbors[switch][path[1]]
+
+    def hosts_connected(self, source_host, destination_host):
+        """Decide physical connectivity without consulting the controller's state."""
+        source_switch = self.attachments[source_host][0]
+        destination_switch = self.attachments[destination_host][0]
+        return (
+            self.component_by_switch[source_switch]
+            == self.component_by_switch[destination_switch]
+        )
+
+    def connected_hosts(self, source_host):
+        """List hosts in the source's component, including the source itself."""
+        return [
+            host for host in self.host_names if self.hosts_connected(source_host, host)
+        ]
 
     def host_ip(self, host):
         """Allocate IPv4 addresses without overflowing an octet at 256 hosts."""

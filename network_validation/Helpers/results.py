@@ -29,6 +29,7 @@ def save_results(directory, results):
                 "max_host_pairs",
                 "pair_seed",
                 "duration_seconds",
+                "forwarding_table_checks",
                 "error",
             ],
             extrasaction="ignore",
@@ -67,6 +68,22 @@ def format_summary(results):
             )
         )
         lines.append("%-29s %-8s %-8s %-8s %-8s %s" % (name, *groups, outcome))
+        table_counts = Counter()
+        for row in rows:
+            table_counts.update(row.get("forwarding_table_checks", {}))
+        if table_counts:
+            lines.append(
+                "  Forwarding tables: %d verified, %d failed, %d inconclusive"
+                % tuple(
+                    table_counts[status] for status in ("PASS", "FAIL", "INCONCLUSIVE")
+                )
+            )
+    if any(
+        row.get("forwarding_table_checks", {}).get("INCONCLUSIVE") for row in results
+    ):
+        lines.append(
+            "INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches."
+        )
     for row in results:
         if row["status"] != "PASS":
             lines.append(
