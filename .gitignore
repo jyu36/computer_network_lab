@@ -22,3 +22,9 @@ venv/
 # Earlier drafts, if restored locally
 /testing/
 /RAIN_Week2_Testing_Draft.zip
+
+# Keep Week 3 experiment evidence in Git, outside the AI attempt workspaces.
+!/network_validation/results/
+/network_validation/results/*
+!/network_validation/results/week_three/
+!/network_validation/results/week_three/**
