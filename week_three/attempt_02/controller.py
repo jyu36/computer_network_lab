@@ -1,0 +1,232 @@
+"""OpenFlow 1.3 learning switch with observable state and barrier sync."""
+
+import json
+
+from ryu.app.wsgi import ControllerBase, WSGIApplication, route
+from ryu.base import app_manager
+from ryu.controller import ofp_event
+from ryu.controller.handler import (
+    CONFIG_DISPATCHER, DEAD_DISPATCHER, MAIN_DISPATCHER, set_ev_cls,
+)
+from ryu.lib import hub
+from ryu.lib.packet import ethernet, ether_types, packet
+from ryu.ofproto import ofproto_v1_3
+from webob import Response
+
+
+class _Synchronization:
+    def __init__(self, switches):
+        self.switches = switches
+        self.pending = set()
+        self.event = hub.Event()
+        self.signalled = False
+        self.failure = None
+
+    def wake(self):
+        if not self.signalled:
+            self.signalled = True
+            self.event.set()
+
+    def fail(self, status, message):
+        self.failure = (status, message)
+        self.wake()
+
+
+class RainController(app_manager.RyuApp):
+    OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
+    _CONTEXTS = {'wsgi': WSGIApplication}
+    SYNC_TIMEOUT = 10.0
+
+    def __init__(self, *args, **kwargs):
+        super(RainController, self).__init__(*args, **kwargs)
+        self._lock = hub.Semaphore(1)
+        self._switches = {}
+        self._learned = {}
+        self._errors = []
+        self._syncs = set()
+        self._barriers = {}
+        kwargs['wsgi'].register(RainHTTP, {'rain': self})
+
+    def _fail_connection_syncs(self, datapath):
+        for sync in self._syncs:
+            if sync.switches.get(datapath.id) is datapath:
+                sync.fail(503, 'A required switch disconnected')
+
+    @set_ev_cls(ofp_event.EventOFPStateChange,
+                [MAIN_DISPATCHER, DEAD_DISPATCHER])
+    def state_change(self, ev):
+        datapath = ev.datapath
+        with self._lock:
+            if ev.state == MAIN_DISPATCHER:
+                previous = self._switches.get(datapath.id)
+                if previous is not None and previous is not datapath:
+                    self._fail_connection_syncs(previous)
+                if previous is not datapath:
+                    self._switches[datapath.id] = datapath
+                    self._learned[datapath.id] = {}
+            elif ev.state == DEAD_DISPATCHER:
+                self._fail_connection_syncs(datapath)
+                if self._switches.get(datapath.id) is datapath:
+                    del self._switches[datapath.id]
+                    self._learned.pop(datapath.id, None)
+
+    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    def switch_features(self, ev):
+        datapath = ev.msg.datapath
+        ofp = datapath.ofproto
+        parser = datapath.ofproto_parser
+        actions = [parser.OFPActionOutput(ofp.OFPP_CONTROLLER,
+                                         ofp.OFPCML_NO_BUFFER)]
+        instructions = [parser.OFPInstructionActions(
+            ofp.OFPIT_APPLY_ACTIONS, actions)]
+        datapath.send_msg(parser.OFPFlowMod(
+            datapath=datapath, table_id=0, priority=0,
+            match=parser.OFPMatch(), instructions=instructions,
+            idle_timeout=0, hard_timeout=0))
+
+    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    def packet_in(self, ev):
+        msg = ev.msg
+        datapath = msg.datapath
+        ofp = datapath.ofproto
+        parser = datapath.ofproto_parser
+        try:
+            if not msg.data or len(msg.data) < 14:
+                return
+            decoded = packet.Packet(msg.data)
+            eth = decoded.get_protocol(ethernet.ethernet)
+            if eth is None or eth.ethertype == ether_types.ETH_TYPE_LLDP:
+                return
+            if eth.ethertype not in (ether_types.ETH_TYPE_ARP,
+                                     ether_types.ETH_TYPE_IP):
+                return
+            in_port = msg.match.get('in_port')
+            if in_port is None:
+                return
+        except (ValueError, TypeError, IndexError, KeyError, AttributeError):
+            return
+
+        with self._lock:
+            if self._switches.get(datapath.id) is not datapath:
+                return
+            learned = self._learned[datapath.id]
+            learned[eth.src] = int(in_port)
+            out_port = learned.get(eth.dst, ofp.OFPP_FLOOD)
+            actions = [parser.OFPActionOutput(out_port)]
+            if out_port != ofp.OFPP_FLOOD and out_port != in_port:
+                instructions = [parser.OFPInstructionActions(
+                    ofp.OFPIT_APPLY_ACTIONS, actions)]
+                datapath.send_msg(parser.OFPFlowMod(
+                    datapath=datapath, table_id=0, priority=1,
+                    match=parser.OFPMatch(in_port=in_port, eth_dst=eth.dst),
+                    instructions=instructions, idle_timeout=0, hard_timeout=0))
+            # The flow modification never consumes the Packet-In buffer. The
+            # Packet-Out alone consumes it, or carries bytes for NO_BUFFER.
+            data = msg.data if msg.buffer_id == ofp.OFP_NO_BUFFER else None
+            datapath.send_msg(parser.OFPPacketOut(
+                datapath=datapath, buffer_id=msg.buffer_id,
+                in_port=in_port, actions=actions, data=data))
+
+    @set_ev_cls(ofp_event.EventOFPErrorMsg,
+                [CONFIG_DISPATCHER, MAIN_DISPATCHER])
+    def openflow_error(self, ev):
+        msg = ev.msg
+        with self._lock:
+            self._errors.append({'type': int(msg.type),
+                                 'code': int(msg.code),
+                                 'xid': int(msg.xid)})
+            for sync in self._syncs:
+                sync.fail(500, 'An OpenFlow error was recorded')
+        self.logger.error('OpenFlow error: type=%s code=%s xid=%s',
+                          msg.type, msg.code, msg.xid)
+
+    @set_ev_cls(ofp_event.EventOFPBarrierReply, MAIN_DISPATCHER)
+    def barrier_reply(self, ev):
+        msg = ev.msg
+        key = (msg.datapath, msg.xid)
+        with self._lock:
+            sync = self._barriers.pop(key, None)
+            if sync is None:
+                return
+            sync.pending.discard(key)
+            if not sync.pending:
+                sync.wake()
+
+    def status(self):
+        with self._lock:
+            return {
+                'switches': sorted(self._switches),
+                'learned': {str(dpid): dict(locations)
+                            for dpid, locations in self._learned.items()},
+                'blocked': [],
+                'errors': [dict(error) for error in self._errors],
+            }
+
+    def synchronize(self):
+        # WSGI requests run in separate greenlets. Waiting here yields to the
+        # application's OpenFlow handlers; none of those handlers waits on us.
+        with self._lock:
+            if not self._switches:
+                return 503, {'complete': False, 'error': 'No switch connected'}
+            sync = _Synchronization(dict(self._switches))
+            self._syncs.add(sync)
+            requests = []
+            for datapath in sync.switches.values():
+                request = datapath.ofproto_parser.OFPBarrierRequest(datapath)
+                datapath.set_xid(request)
+                key = (datapath, request.xid)
+                sync.pending.add(key)
+                self._barriers[key] = sync
+                requests.append((datapath, request))
+            try:
+                for datapath, request in requests:
+                    datapath.send_msg(request)
+            except Exception:
+                self.logger.exception('Could not send synchronization barrier')
+                sync.fail(503, 'Could not send a required barrier')
+            if self._errors:
+                sync.fail(500, 'An OpenFlow error was recorded')
+
+        try:
+            sync.event.wait(timeout=self.SYNC_TIMEOUT)
+            with self._lock:
+                for dpid, datapath in sync.switches.items():
+                    if self._switches.get(dpid) is not datapath:
+                        sync.fail(503, 'A required switch disconnected')
+                        break
+                if sync.failure is not None:
+                    status, message = sync.failure
+                    return status, {'complete': False, 'error': message}
+                if self._errors:
+                    return 500, {'complete': False,
+                                 'error': 'An OpenFlow error was recorded'}
+                if sync.pending:
+                    return 504, {'complete': False,
+                                 'error': 'Timed out waiting for Barrier Replies'}
+                return 200, {'complete': True}
+        finally:
+            with self._lock:
+                self._syncs.discard(sync)
+                for key in sync.pending:
+                    if self._barriers.get(key) is sync:
+                        del self._barriers[key]
+
+
+class RainHTTP(ControllerBase):
+    def __init__(self, req, link, data, **config):
+        super(RainHTTP, self).__init__(req, link, data, **config)
+        self.rain = data['rain']
+
+    @staticmethod
+    def _json(status, body):
+        return Response(status=status, content_type='application/json',
+                        body=json.dumps(body).encode('utf-8'))
+
+    @route('rain_status', '/rain/status', methods=['GET'])
+    def status(self, req, **kwargs):
+        return self._json(200, self.rain.status())
+
+    @route('rain_sync', '/rain/sync', methods=['POST'])
+    def sync(self, req, **kwargs):
+        status, body = self.rain.synchronize()
+        return self._json(status, body)

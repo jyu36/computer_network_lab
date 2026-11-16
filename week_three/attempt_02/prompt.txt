@@ -1,0 +1,79 @@
+Write a complete standalone Python Ryu OpenFlow 1.3 learning-switch controller
+from the behavior and interface specifications below. Save the complete result
+as controller.py in this directory. No starter or reference code is supplied.
+Choose your own implementation structure and internal state representation.
+
+Allowed inputs and tools
+Read this prompt and AGENTS.md only, plus output you create during this attempt.
+Local file editing and a Python standard-library syntax check are permitted. Do not retrieve source
+code, browse, use external tools/connectors or subagents, inspect installed package
+sources, or read outside this directory. Use your existing knowledge of Ryu.
+The researcher will run integration tests separately. Do not ask for test feedback.
+
+Environment and scope
+- Target the researcher's existing Python 3.10/Ryu environment on Ubuntu.
+- The controller will be launched with ryu-manager and OpenFlow 1.3 OVS switches.
+- One controller can manage multiple switches. Topologies are loop-free and may
+  contain disconnected components. Hosts have unique, fixed MAC addresses and
+  fixed attachment ports during this baseline task.
+- Support Ethernet ARP and IPv4 ICMP traffic. IPv6, routing, physical topology
+  changes, loop prevention and performance guarantees are outside this task.
+- Do not hard-code host counts, host addresses, switch IDs or physical ports.
+
+Required baseline behavior
+1. Install a priority-0 table-miss rule on each connected switch that sends
+   unmatched packets to the controller with the full packet available.
+2. On Packet-In, learn the source MAC and incoming port separately for each
+   switch. The status endpoint must expose the actual observed mapping used
+   for forwarding; its Python variable names and data structures are your choice.
+3. If the destination is unknown on that switch, flood using OpenFlow's flood
+   output. ARP broadcasts must be flooded within their physical component.
+4. If the destination is known, output to its learned port. For hosts on different
+   ports, cache forwarding with a priority-1 rule matching the incoming port and
+   destination MAC. Set no idle or hard timeout. Forward the triggering packet too.
+5. Handle Packet-In buffering correctly: do not refer to a nonexistent switch
+   buffer or omit packet data when the switch reports OFP_NO_BUFFER.
+6. Once ready, ARP and IPv4 ping must succeed for physically connected host pairs.
+   Disconnected components cannot exchange packets through a nonexistent link.
+   After destination learning and cached forwarding, subsequent matching requests
+   must reach that destination without leaking copies to other hosts.
+7. Safely ignore malformed/non-Ethernet packets and LLDP traffic rather than
+   crashing or treating them as application traffic.
+
+Required external interfaces (implement these yourself)
+Use Ryu's WSGI integration so ryu-manager's --wsapi-host and --wsapi-port options
+configure the HTTP service; do not hard-code a separate HTTP listener.
+
+HTTP GET /rain/status must return HTTP 200 with a JSON object containing:
+- switches: a list of actual connected switch DPIDs as integers;
+- learned: an object mapping string switch IDs to objects mapping learned source
+  MAC addresses to integer ingress ports;
+- blocked: [] (a fixed compatibility field for this baseline);
+- errors: a list of recorded OpenFlow errors, each with type, code and xid.
+For example, the response shape for one observed host could be:
+{"switches":[1],"learned":{"1":{"00:00:00:00:00:01":1}},"blocked":[],"errors":[]}
+This is a shape example, not a topology or state to hard-code. Status is read-only
+and must not manufacture learned locations. Remove disconnected switches from
+the connected-switch list.
+
+HTTP POST /rain/sync must synchronize with prior OpenFlow updates:
+- Send a Barrier Request on every connected switch's OpenFlow connection.
+- Return HTTP 200 with {"complete":true} only after all corresponding Barrier
+  Replies have been received. No packet-generating test activity occurs during sync.
+- Return HTTP 503 when no switch is connected or a required switch disconnects.
+- Record OpenFlow errors and do not return successful completion after an error;
+  return a non-2xx response instead. Missing Barrier Replies must never count as success.
+- Process replies asynchronously; do not block an event handler waiting for
+  Barrier Replies that the same event loop needs to process.
+
+The HTTP requests and OpenFlow event handlers must observe consistent controller
+state. Choose the implementation; no class names or private method names are prescribed.
+
+Implementation task
+Implement the complete controller, including learning, forwarding, switch events,
+HTTP interfaces, synchronization and error recording. It must load directly with
+ryu-manager controller.py in the target environment, without additional local
+modules or source files. Produce complete executable source, not a patch or snippet.
+
+Finish by briefly describing your implementation and any checks actually executed.
+Do not add README files, dependency files, generated reports or extra features.
