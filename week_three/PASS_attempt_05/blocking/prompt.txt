@@ -1,0 +1,117 @@
+Modify the supplied controller.py to add an initial destination-MAC blocklist,
+while preserving the accumulated requirements below. This is a maintenance task:
+start from the supplied current implementation, not a newly generated replacement.
+Save the complete updated implementation in controller.py in this directory.
+
+Allowed inputs, tools and budget
+Read this prompt, AGENTS.md and the supplied controller.py only, plus files you
+create during this task. Do not inspect parent/sibling folders, earlier chats,
+memories, Git history, reference implementations, tests or evaluation results.
+Source retrieval, browsing, network calls, package installation, external
+connectors and subagents are disabled. Local editing and a Python standard-library
+syntax check are allowed. Do not inspect installed library source code.
+Complete one implementation in this task. Integration tests are run separately
+by the researcher; no test-feedback correction turn is provided for this step.
+Do not change these instruction files or create extra source/dependency files.
+
+Accumulated requirements
+The new destination policy below takes precedence over delivery/forwarding to
+blocked destinations. All earlier forwarding guarantees remain for permitted
+traffic. Retain the supplied implementation's design where practical; internal
+names and helper structure remain your choice.
+
+Environment and scope
+- Target the researcher's existing Python 3.10/Ryu environment on Ubuntu.
+- The controller will be launched with ryu-manager and OpenFlow 1.3 OVS switches.
+- One controller can manage multiple switches. Topologies are loop-free and may
+  contain disconnected components. Hosts have unique, fixed MAC addresses and
+  fixed attachment ports during this task.
+- Support Ethernet ARP and IPv4 ICMP traffic. IPv6, routing, physical topology
+  changes, loop prevention and performance guarantees are outside this task.
+- Do not hard-code host counts, host addresses, switch IDs or physical ports.
+
+Required baseline behavior
+1. Install a priority-0 table-miss rule on each connected switch that sends
+   unmatched packets to the controller with the full packet available.
+2. On Packet-In, learn the source MAC and incoming port separately for each
+   switch. The status endpoint must expose the actual observed mapping used
+   for forwarding; its Python variable names and data structures are your choice.
+3. If the destination is unknown on that switch, flood using OpenFlow's flood
+   output. ARP broadcasts must be flooded within their physical component.
+4. If the destination is known, output to its learned port. For hosts on different
+   ports, cache forwarding with a priority-1 rule matching the incoming port and
+   destination MAC. Set no idle or hard timeout. Forward the triggering packet too.
+5. Handle Packet-In buffering correctly: do not refer to a nonexistent switch
+   buffer or omit packet data when the switch reports OFP_NO_BUFFER.
+6. Once ready, ARP and IPv4 ping must succeed for physically connected host pairs.
+   Disconnected components cannot exchange packets through a nonexistent link.
+   After destination learning and cached forwarding, subsequent matching requests
+   must reach that destination without leaking copies to other hosts.
+7. Safely ignore malformed/non-Ethernet packets and LLDP traffic rather than
+   crashing or treating them as application traffic.
+
+Required external interfaces (preserve their behavior)
+Use Ryu's WSGI integration so ryu-manager's --wsapi-host and --wsapi-port options
+configure the HTTP service; do not hard-code a separate HTTP listener.
+
+HTTP GET /rain/status must return HTTP 200 with a JSON object containing:
+- switches: a list of actual connected switch DPIDs as integers;
+- learned: an object mapping string switch IDs to objects mapping learned source
+  MAC addresses to integer ingress ports;
+- blocked: the sorted list of currently configured destination MAC addresses,
+  normalized to lowercase; use [] when the initial configuration is empty;
+- errors: a list of recorded OpenFlow errors, each with type, code and xid.
+For example, the response shape for one observed host could be:
+{"switches":[1],"learned":{"1":{"00:00:00:00:00:01":1}},"blocked":[],"errors":[]}
+This is a shape example, not a topology or state to hard-code. Status is read-only
+and must not manufacture learned locations. Remove disconnected switches from
+the connected-switch list.
+
+HTTP POST /rain/sync must synchronize with prior OpenFlow updates:
+- Send a Barrier Request on every connected switch's OpenFlow connection.
+- Return HTTP 200 with {"complete":true} only after all corresponding Barrier
+  Replies have been received. No packet-generating test activity occurs during sync.
+- Return HTTP 503 when no switch is connected or a required switch disconnects.
+- Record OpenFlow errors and do not return successful completion after an error;
+  return a non-2xx response instead. Missing Barrier Replies must never count as success.
+- Process replies asynchronously; do not block an event handler waiting for
+  Barrier Replies that the same event loop needs to process.
+
+The HTTP requests and OpenFlow event handlers must observe consistent controller
+state. Choose the implementation; no class names or private method names are prescribed.
+
+
+New requirement: initial destination blocklist
+1. At process startup, read environment variable RAIN_BLOCKED as a JSON array of
+   destination MAC strings. An unset value means an empty blocklist. Valid inputs
+   use colon-separated six-byte MAC addresses; compare addresses case-insensitively
+   and normalize reported addresses to lowercase. Do not hard-code test hosts.
+2. Drop Ethernet frames whose destination MAC is in that set. This applies before
+   and after destination learning and when a matching forwarding rule exists.
+   Do not emit a Packet-Out, flood a blocked-destination frame, or install a rule
+   that allows such traffic to bypass the policy.
+3. Enforce the policy across the network managed by this controller, including
+   switches connecting after startup. No particular drop priority or placement
+   is prescribed; the combined behavior must prevent delivery to blocked MACs.
+4. This is a DESTINATION policy. A host with a blocked MAC may originate one-way
+   traffic to an allowed destination. Continue learning valid observed source MAC
+   locations even when the source belongs to the blocklist. A complete ping may
+   fail if its reply would be addressed to a blocked destination.
+5. An ARP broadcast has destination ff:ff:ff:ff:ff:ff. Do not drop it merely because
+   its target IP belongs to a blocked host. Apply the policy to Ethernet destination
+   MACs, not ARP target IPs. Unknown allowed destinations must retain flooding.
+6. Preserve normal forwarding between permitted hosts and physical isolation
+   between disconnected components. An empty blocklist must preserve the complete
+   earlier behavior.
+7. GET /rain/status must expose the actual configured blocklist in blocked while
+   preserving switches, learned and errors. POST /rain/sync must still acknowledge
+   actual switch processing; include policy-related rule updates in synchronization.
+8. Implement only this startup configuration feature. Do not add additional HTTP
+   routes or unrelated capabilities.
+
+Output
+Leave a complete standalone controller.py that loads directly with ryu-manager
+in the same Python 3.10/Ryu environment, without extra local modules. Briefly
+state what you changed and which checks actually ran. Do not claim that Mininet
+or Ryu integration tests passed if you could not run them. Do not create README
+files, reports, test files or dependency files.
