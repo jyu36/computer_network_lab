@@ -1,13 +1,38 @@
 """Executable base scenarios; network operations live in environment.py."""
 
+from Helpers.topology import host_mac_address
+
 
 def test_unknown_destination_flooding(environment):
-    """Run the unknown behavior check in a fresh experiment."""
+    """Test flooding with an unlearned destination, allowing unrelated learning."""
     if not environment.options.stock_controller_mode:
-        assert all(
-            not locations
-            for locations in environment.get_controller_status()["learned"].values()
-        ), "Fresh controller was not empty"
+        environment.checkpoint = "unknown_destination_precondition"
+        destination_mac = host_mac_address(environment.roles["destination"])
+        learned = environment.get_controller_status()["learned"]
+        switches_with_destination = [
+            switch
+            for switch, locations in learned.items()
+            if destination_mac in {mac.lower() for mac in locations}
+        ]
+        environment.recorded_events.append(
+            {
+                "unknown_destination_precondition": {
+                    "destination_mac": destination_mac,
+                    "learned_before_probe": learned,
+                    "switches_with_destination": switches_with_destination,
+                }
+            }
+        )
+        # A fresh process can legitimately learn background sources at startup.
+        # Only the probe destination must be unknown. A known destination makes
+        # this experiment invalid, rather than demonstrating a flooding defect.
+        if switches_with_destination:
+            raise RuntimeError(
+                "Unknown-destination precondition not met: probe destination %s "
+                "is already learned on switches %s"
+                % (destination_mac, switches_with_destination)
+            )
+    environment.checkpoint = "unknown_destination_flooding"
     environment.assert_packet_delivery(
         environment.roles["source"],
         environment.roles["destination"],

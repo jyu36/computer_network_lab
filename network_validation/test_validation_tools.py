@@ -709,6 +709,123 @@ class SampledDevelopmentRunTests(unittest.TestCase):
                 )
 
 
+class UnknownDestinationPreconditionTests(unittest.TestCase):
+    """Background learning must not turn an untested flooding case into a failure."""
+
+    def environment(self, configuration, learned):
+        return SimpleNamespace(
+            options=SimpleNamespace(stock_controller_mode=False),
+            configuration=configuration,
+            roles=configuration.roles,
+            host_names=configuration.host_names,
+            recorded_events=[],
+            get_controller_status=Mock(return_value={"learned": learned}),
+            assert_packet_delivery=Mock(),
+        )
+
+    def test_unrelated_startup_macs_allow_flooding_checks_for_all_configurations(self):
+        for configuration in load_configurations(
+            VALIDATION_DIRECTORY / "network_configurations.json"
+        ):
+            with self.subTest(configuration=configuration.name):
+                environment = self.environment(
+                    configuration,
+                    {
+                        str(i): {"22:1c:8e:da:f1:7b": 5}
+                        for i in range(1, len(configuration.switch_names) + 1)
+                    },
+                )
+                run_unknown_flooding_case(environment)
+                environment.get_controller_status.assert_called_once()
+                environment.assert_packet_delivery.assert_called_once()
+                call = environment.assert_packet_delivery.call_args
+                self.assertEqual(
+                    call.args[:2],
+                    (configuration.roles["source"], configuration.roles["destination"]),
+                )
+                self.assertEqual(call.kwargs["packet_count"], 1)
+                self.assertEqual(
+                    call.kwargs["expected_delivery"],
+                    {
+                        host: configuration.hosts_connected(
+                            configuration.roles["source"], host
+                        )
+                        for host in configuration.host_names
+                        if host != configuration.roles["source"]
+                    },
+                )
+                evidence = environment.recorded_events[-1][
+                    "unknown_destination_precondition"
+                ]
+                self.assertEqual(evidence["switches_with_destination"], [])
+                self.assertIn(
+                    "22:1c:8e:da:f1:7b", evidence["learned_before_probe"]["1"]
+                )
+
+    def test_learning_source_or_other_host_does_not_make_destination_known(self):
+        configuration = NetworkConfiguration(
+            {"name": "source_already_seen", "host_count": 3}
+        )
+        environment = self.environment(
+            configuration, {"1": {host_mac_address("h1"): 1, host_mac_address("h3"): 3}}
+        )
+        run_unknown_flooding_case(environment)
+        environment.assert_packet_delivery.assert_called_once()
+
+    def test_destination_known_on_any_switch_is_a_setup_error_without_sending(self):
+        configuration = NetworkConfiguration(
+            {
+                "name": "destination_known",
+                "host_count": 10,
+                "switches": ["s1", "s2"],
+                "roles": {"source": "h1", "destination": "h10", "other": "h3"},
+            }
+        )
+        for switch in ("1", "2"):
+            with self.subTest(switch=switch):
+                environment = self.environment(configuration, {"1": {}, "2": {}})
+                environment.get_controller_status.return_value["learned"][switch] = {
+                    host_mac_address("h10").upper(): 10
+                }
+                with self.assertRaisesRegex(
+                    RuntimeError, "probe destination .* is already learned"
+                ):
+                    run_unknown_flooding_case(environment)
+                environment.assert_packet_delivery.assert_not_called()
+                self.assertEqual(
+                    environment.checkpoint, "unknown_destination_precondition"
+                )
+                self.assertEqual(
+                    environment.recorded_events[-1]["unknown_destination_precondition"][
+                        "switches_with_destination"
+                    ],
+                    [switch],
+                )
+
+    def test_actual_flooding_failure_still_propagates_after_valid_setup(self):
+        configuration = NetworkConfiguration({"name": "bad_flooding", "host_count": 3})
+        environment = self.environment(configuration, {"1": {"22:1c:8e:da:f1:7b": 1}})
+        environment.assert_packet_delivery.side_effect = BehaviorFailure(
+            "packet_delivery", "Destination missed the probe"
+        )
+        with self.assertRaises(BehaviorFailure) as failure:
+            run_unknown_flooding_case(environment)
+        self.assertEqual(failure.exception.code, "packet_delivery")
+        self.assertEqual(environment.checkpoint, "unknown_destination_flooding")
+
+    def test_empty_learning_tables_still_run_the_same_packet_observation(self):
+        configuration = NetworkConfiguration({"name": "empty", "host_count": 3})
+        environment = self.environment(configuration, {"1": {}})
+        run_unknown_flooding_case(environment)
+        environment.assert_packet_delivery.assert_called_once_with(
+            "h1",
+            "h2",
+            ["h2", "h3"],
+            expected_delivery={"h2": True, "h3": True},
+            packet_count=1,
+        )
+
+
 class DisconnectedNetworkTests(unittest.TestCase):
     """Separate physical isolation from blocking and from faulty allowed forwarding."""
 
