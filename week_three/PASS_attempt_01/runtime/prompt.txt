@@ -1,0 +1,198 @@
+Modify the supplied controller.py to support runtime destination-policy updates,
+while preserving the accumulated requirements below. This is a maintenance task:
+start from the supplied current implementation, not a newly generated replacement.
+Save the complete updated implementation in controller.py in this directory.
+
+Allowed inputs, tools and budget
+Read this prompt, AGENTS.md and the supplied controller.py only, plus files you
+create during this task. Do not inspect parent/sibling folders, earlier chats,
+memories, Git history, reference implementations, tests or evaluation results.
+Source retrieval, browsing, network calls, package installation, external
+connectors and subagents are disabled. Local editing and a Python standard-library
+syntax check are allowed. Do not inspect installed library source code.
+Complete one implementation in this task. Integration tests are run separately
+by the researcher; no test-feedback correction turn is provided for this step.
+Do not change these instruction files or create extra source/dependency files.
+
+Accumulated requirements
+The existing destination policy below takes precedence over delivery/forwarding to
+blocked destinations. All earlier forwarding guarantees remain for permitted
+traffic. Retain the supplied implementation's design where practical; internal
+names and helper structure remain your choice.
+
+Environment and scope
+- Target the researcher's existing Python 3.10/Ryu environment on Ubuntu.
+- The controller will be launched with ryu-manager and OpenFlow 1.3 OVS switches.
+- One controller can manage multiple switches. Topologies are loop-free and may
+  contain disconnected components. Hosts have unique, fixed MAC addresses and
+  attachment ports that may change as specified in the host-movement requirement below.
+- Support Ethernet ARP and IPv4 ICMP traffic. IPv6, routing, cross-switch host
+  reattachment, link failures, loop prevention and performance guarantees are outside this task.
+- Do not hard-code host counts, host addresses, switch IDs or physical ports.
+
+Required baseline behavior
+1. Install a priority-0 table-miss rule on each connected switch that sends
+   unmatched packets to the controller with the full packet available.
+2. On Packet-In, learn the source MAC and incoming port separately for each
+   switch. The status endpoint must expose the actual observed mapping used
+   for forwarding; its Python variable names and data structures are your choice.
+3. If the destination is unknown on that switch, flood using OpenFlow's flood
+   output. ARP broadcasts must be flooded within their physical component.
+4. If the destination is known, output to its learned port. For hosts on different
+   ports, cache forwarding with a priority-1 rule matching the incoming port and
+   destination MAC. Set no idle or hard timeout. Forward the triggering packet too.
+5. Handle Packet-In buffering correctly: do not refer to a nonexistent switch
+   buffer or omit packet data when the switch reports OFP_NO_BUFFER.
+6. Once ready, ARP and IPv4 ping must succeed for physically connected host pairs.
+   Disconnected components cannot exchange packets through a nonexistent link.
+   After destination learning and cached forwarding, subsequent matching requests
+   must reach that destination without leaking copies to other hosts.
+7. Safely ignore malformed/non-Ethernet packets and LLDP traffic rather than
+   crashing or treating them as application traffic.
+
+Required external interfaces (preserve their behavior)
+Use Ryu's WSGI integration so ryu-manager's --wsapi-host and --wsapi-port options
+configure the HTTP service; do not hard-code a separate HTTP listener.
+
+HTTP GET /rain/status must return HTTP 200 with a JSON object containing:
+- switches: a list of actual connected switch DPIDs as integers;
+- learned: an object mapping string switch IDs to objects mapping learned source
+  MAC addresses to integer ingress ports;
+- blocked: the sorted list of currently configured destination MAC addresses,
+  normalized to lowercase; reflect successful runtime updates and use [] when
+  the active blocklist is empty;
+- errors: a list of recorded OpenFlow errors, each with type, code and xid.
+For example, the response shape for one observed host could be:
+{"switches":[1],"learned":{"1":{"00:00:00:00:00:01":1}},"blocked":[],"errors":[]}
+This is a shape example, not a topology or state to hard-code. Status is read-only
+and must not manufacture learned locations. Remove disconnected switches from
+the connected-switch list.
+
+HTTP POST /rain/sync must synchronize with prior OpenFlow updates:
+- Send a Barrier Request on every connected switch's OpenFlow connection.
+- Return HTTP 200 with {"complete":true} only after all corresponding Barrier
+  Replies have been received. No packet-generating test activity occurs during sync.
+- Return HTTP 503 when no switch is connected or a required switch disconnects.
+- Record OpenFlow errors and do not return successful completion after an error;
+  return a non-2xx response instead. Missing Barrier Replies must never count as success.
+- Process replies asynchronously; do not block an event handler waiting for
+  Barrier Replies that the same event loop needs to process.
+
+The HTTP requests and OpenFlow event handlers must observe consistent controller
+state. Choose the implementation; no class names or private method names are prescribed.
+
+
+Accumulated requirement: initial destination blocklist
+1. At process startup, read environment variable RAIN_BLOCKED as a JSON array of
+   destination MAC strings. An unset value means an empty blocklist. Valid inputs
+   use colon-separated six-byte MAC addresses; compare addresses case-insensitively
+   and normalize reported addresses to lowercase. Do not hard-code test hosts.
+2. Drop Ethernet frames whose destination MAC is in the active set, initialized
+   from the startup configuration and updated through the interface below. This applies before
+   and after destination learning and when a matching forwarding rule exists.
+   Do not emit a Packet-Out, flood a blocked-destination frame, or install a rule
+   that allows such traffic to bypass the policy.
+3. Enforce the policy across the network managed by this controller, including
+   switches connecting after startup. No particular drop priority or placement
+   is prescribed; the combined behavior must prevent delivery to blocked MACs.
+4. This is a DESTINATION policy. A host with a blocked MAC may originate one-way
+   traffic to an allowed destination. Continue learning valid observed source MAC
+   locations even when the source belongs to the blocklist. A complete ping may
+   fail if its reply would be addressed to a blocked destination.
+5. An ARP broadcast has destination ff:ff:ff:ff:ff:ff. Do not drop it merely because
+   its target IP belongs to a blocked host. Apply the policy to Ethernet destination
+   MACs, not ARP target IPs. Unknown allowed destinations must retain flooding.
+6. Preserve normal forwarding between permitted hosts and physical isolation
+   between disconnected components. An empty blocklist must preserve the complete
+   earlier behavior.
+7. GET /rain/status must expose the actual configured blocklist in blocked while
+   preserving switches, learned and errors. POST /rain/sync must still acknowledge
+   actual switch processing; include policy-related rule updates in synchronization.
+8. Preserve startup configuration and the existing interfaces. The only new
+   HTTP route for this step is the runtime policy interface specified below.
+
+Accumulated requirement: observed host movement
+1. A host keeps its MAC and IP address but its attachment port on the same switch
+   may change to another unused physical OpenFlow port. This may occur after
+   forwarding rules have already been installed. Do not hard-code any switch,
+   host, old port or new port. No cross-switch reattachment is required here.
+2. Movement is detected when the controller receives a valid Packet-In with an
+   already observed source MAC on a different incoming port for that switch.
+   Physical port renumbering alone is not a detection signal. A host may announce
+   its new position with an ARP broadcast that reaches the controller.
+3. Update the actual per-switch source-location mapping to the new incoming port.
+   GET /rain/status must expose that new observation, not a predicted location.
+4. Remove or replace stale cached forwarding rules affected by the movement.
+   In particular, destination rules for the moved MAC must no longer output to
+   its old port. Merely updating the Python mapping is insufficient when existing
+   switch rules continue sending packets to the former port. Invalidate obsolete
+   rules as needed and preserve correct processing of subsequent traffic.
+5. After the movement observation and completion of its required switch updates,
+   permitted traffic to the moved host must reach its new port, and traffic from
+   the moved host to other permitted hosts must still be delivered. Continued
+   communication must not require restarting the controller or network.
+6. Preserve the active destination blocklist throughout movement handling. Do not
+   remove policy enforcement when deleting or replacing forwarding rules. Blocked
+   destinations remain blocked; permitted traffic remains deliverable where a
+   physical path exists. ARP broadcasts and permitted one-way traffic from a
+   blocked source retain the accumulated behavior.
+7. Retain POST /rain/sync as the update-completion interface. The researcher waits
+   until the changed location is observed through GET /rain/status, then requests
+   synchronization, then checks delivery. Return complete=true only after required
+   movement-related updates have been processed, acknowledged through the existing
+   barrier mechanism, with no reported OpenFlow errors. Do not equate sending a
+   Flow-Mod with confirmed completion and do not block the OpenFlow event loop.
+8. Keep all earlier behavior when no host has moved. Movement processing must
+   also preserve any active destination policy established by the interface below.
+
+New requirement: runtime destination-policy replacement
+1. Add HTTP PUT /rain/policy through the existing Ryu WSGI service. A valid JSON
+   body is an object with exactly one key, blocked, whose value is a list of MAC
+   address strings, for example {"blocked":["00:00:00:00:00:02"]}.
+   This example specifies the interface, not a host to hard-code. Each address
+   must be exactly six colon-separated hexadecimal bytes. Accept upper/lowercase,
+   normalize to lowercase, and treat duplicates as one destination.
+2. Each valid request REPLACES the entire blocklist; it is not an incremental add.
+   {"blocked":[]} unblocks every destination. Preserve RAIN_BLOCKED as the startup
+   initial state, but do not reset successful runtime changes from the environment.
+   No controller, switch or network restart is permitted for an update.
+3. Apply blocking to both packets handled by the controller and packets handled
+   directly by already-installed switch forwarding rules. Updating a Python set
+   alone is not sufficient if cached switch rules still deliver forbidden traffic.
+   Previously cached traffic and traffic arriving from a different source/ingress
+   must both obey the new policy after successful completion.
+4. Unblocking must restore permitted delivery, including destinations that had
+   forwarding rules before blocking. Preserve unrelated permitted communication,
+   source learning, ARP semantics, and physical isolation between disconnected
+   components. A host whose MAC is blocked may still send to an allowed destination.
+5. Return HTTP 200 with {"complete":true} only after all required policy-related
+   Flow-Mod messages have been processed by the affected switches, acknowledged
+   through Barrier Replies on their OpenFlow connections. Return a non-2xx status
+   on timeout, OpenFlow errors or a required switch disconnect; do not report
+   success merely because messages were queued. No connected switch: HTTP 503.
+6. Handle controller events and HTTP requests consistently so stale policy decisions
+   cannot reinstall forwarding that bypasses an acknowledged block. The researcher
+   sends new traffic after the update response. Do not block the OpenFlow event loop
+   while waiting for the Barrier Replies needed to complete a request.
+7. Support successive block/unblock cycles within one running experiment. GET
+   /rain/status must report the active normalized, sorted blocklist after updates;
+   POST /rain/sync must retain its existing synchronization behavior. A switch
+   connecting later must receive the current active policy, not an obsolete copy.
+8. Fully validate each request BEFORE modifying controller policy or sending any
+   policy-changing switch messages. Reject invalid input with HTTP 400, preserving
+   the previous policy and forwarding behavior. Invalid input includes malformed
+   or missing JSON, a body that is not an object, missing blocked, extra keys,
+   blocked that is not a list, non-string list entries, or malformed MAC strings.
+   An empty request body is invalid; {"blocked":[]} is valid.
+9. Preserve movement handling after runtime updates. A move must not erase current
+   policy enforcement or revive blocked forwarding. Preserve baseline and startup
+   blocklist behavior when runtime updates have not been requested.
+10. Implement only this additional feature. No extra HTTP endpoints, dependencies,
+    generated reports or unrelated features are required.
+
+Output
+Leave a complete standalone controller.py that loads directly with ryu-manager
+in the same Python 3.10/Ryu environment, without extra local modules. Briefly
+state what you changed and which checks actually ran. Do not claim that Mininet
+or Ryu integration tests passed if you could not run them. Do not create README
+files, reports, test files or dependency files.
