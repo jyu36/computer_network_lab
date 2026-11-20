@@ -1,0 +1,253 @@
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ cd ~/sdn-project/computer_network_lab
+git pull
+
+bash week_four/evaluate_simplifications.sh
+remote: Enumerating objects: 30, done.
+remote: Counting objects: 100% (30/30), done.
+remote: Compressing objects: 100% (15/15), done.
+remote: Total 26 (delta 6), reused 26 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (26/26), 15.78 KiB | 576.00 KiB/s, done.
+From https://github.com/jyu36/computer_network_lab
+   cc32125..f46983d  main       -> origin/main
+Updating cc32125..f46983d
+Fast-forward
+ .../results/week_three/reference_baseline_20261120T030657Z_reconstructed/baseline_summary.json           | 195 +++++++++++++++++++++++++++++++++++++
+ .../results/week_three/reference_baseline_20261120T030657Z_reconstructed/terminal_output.txt             | 110 +++++++++++++++++++++
+ week_four/effort_log.csv                                                                                 |   3 +
+ week_four/evaluate_simplifications.sh                                                                    |  62 ++++++++++++
+ week_four/experiment_manifest.json                                                                       |  56 +++++++++++
+ week_four/originals/source_a/controller.py                                                               | 264 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ week_four/originals/source_b/controller.py                                                               | 218 +++++++++++++++++++++++++++++++++++++++++
+ week_four/proposals/source_a/controller.py                                                               | 273 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ week_four/proposals/source_b/controller.py                                                               | 219 +++++++++++++++++++++++++++++++++++++++++
+ week_four/simplification/source_a/controller.py                                                          | 273 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ week_four/simplification/source_a/prompt.txt                                                             | 109 +++++++++++++++++++++
+ week_four/simplification/source_b/controller.py                                                          | 219 +++++++++++++++++++++++++++++++++++++++++
+ week_four/simplification/source_b/prompt.txt                                                             | 109 +++++++++++++++++++++
+ 13 files changed, 2110 insertions(+)
+ create mode 100644 network_validation/results/week_three/reference_baseline_20261120T030657Z_reconstructed/baseline_summary.json
+ create mode 100644 network_validation/results/week_three/reference_baseline_20261120T030657Z_reconstructed/terminal_output.txt
+ create mode 100644 week_four/effort_log.csv
+ create mode 100644 week_four/evaluate_simplifications.sh
+ create mode 100644 week_four/experiment_manifest.json
+ create mode 100644 week_four/originals/source_a/controller.py
+ create mode 100644 week_four/originals/source_b/controller.py
+ create mode 100644 week_four/proposals/source_a/controller.py
+ create mode 100644 week_four/proposals/source_b/controller.py
+ create mode 100644 week_four/simplification/source_a/controller.py
+ create mode 100644 week_four/simplification/source_a/prompt.txt
+ create mode 100644 week_four/simplification/source_b/controller.py
+ create mode 100644 week_four/simplification/source_b/prompt.txt
+[sudo] password for jyu164: 
+Evaluating simplified baseline: source_a
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.5s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.5s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.2s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (64.7s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.9s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.8s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.8s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.5s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (101.7s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.4s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (3.1s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (202.4s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.5s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.9s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (7.0s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.5s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (66.9s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (20.1s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 36 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 88 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 149 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/baseline_20261120T044049Z/source_a/20261120T044049.132337Z_controller
+source_a: test exit code 0; log exit code 0
+Evaluating simplified baseline: source_b
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (19.1s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.6s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.2s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (64.7s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.9s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (38.1s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.8s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.5s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (101.1s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.7s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.9s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (201.4s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.7s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.8s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (7.0s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (66.3s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (20.2s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 36 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 85 verified, 0 failed, 6 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 149 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/baseline_20261120T044049Z/source_b/20261120T045019.020094Z_controller
+source_b: test exit code 0; log exit code 0
+Results saved in: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/baseline_20261120T044049Z
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ 

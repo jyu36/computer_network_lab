@@ -1,5 +1,5 @@
 {
-  "phase": "Two completed simplification proposals frozen; local prechecks passed; baseline and held-out integration acceptance pending.",
+  "phase": "Both proposals passed development baseline; exploratory held-out preservation definitions frozen before their evaluation.",
   "source_mapping_researcher_only": {
     "source_a": {
       "source_file": "controllers/ryu_reference_baseline.py",
@@ -18,7 +18,15 @@
         "integration_acceptance": "PENDING",
         "handler_checks": "13 existing reference handler checks passed against proposal using framework stand-ins."
       },
-      "structural_change": "Synchronization object now owns barrier startup, acknowledgments and terminal-result selection."
+      "structural_change": "Synchronization object now owns barrier startup, acknowledgments and terminal-result selection.",
+      "baseline_integration": {
+        "status": "PASS",
+        "passed": 21,
+        "total": 21,
+        "record": "week_four/evaluation_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json",
+        "evidence_source": "user-supplied Ubuntu terminal output",
+        "held_out_acceptance": "PENDING"
+      }
     },
     "source_b": {
       "source_file": "week_three/PASS_attempt_01/controller.py",
@@ -37,7 +45,15 @@
         "integration_acceptance": "PENDING",
         "differential_handler_exercise": "Original and proposal produced matching fake-datapath messages/state across exercised learning, buffering, malformed input, LLDP, synchronization, timeout, error and disconnect scenarios."
       },
-      "structural_change": "Shared _install_flow helper replaces duplicate table-miss and learned-flow construction."
+      "structural_change": "Shared _install_flow helper replaces duplicate table-miss and learned-flow construction.",
+      "baseline_integration": {
+        "status": "PASS",
+        "passed": 21,
+        "total": 21,
+        "record": "week_four/evaluation_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json",
+        "evidence_source": "user-supplied Ubuntu terminal output",
+        "held_out_acceptance": "PENDING"
+      }
     }
   },
   "intended_model_user_reported": "GPT-6.1 Sol",
@@ -52,5 +68,7 @@
     "resource_budget": "Match settings across both tasks. Exact hard time/token budget has not yet been set; choose and record it before starting."
   },
   "effort_recording": "Record observed times and actual available usage outside agent folders. Leave unavailable metrics blank and explain in notes. VM evaluation duration is separate from AI effort.",
-  "prompt_sha256": "fbaba5f04d9d0234a064bcf245ca87c644406bec489841b7baf01550cdfc6c4d"
+  "prompt_sha256": "fbaba5f04d9d0234a064bcf245ca87c644406bec489841b7baf01550cdfc6c4d",
+  "held_out_manifest": "week_four/held_out/manifest.json",
+  "held_out_manifest_sha256": "2b4ddfae5fea151ef07c83be3043782497181292a87d3c1136acf55e05705b08"
 }

@@ -1,0 +1,165 @@
+[
+  {
+    "id": "preservation_cold_destination",
+    "stage": "base",
+    "scenario": "unknown"
+  },
+  {
+    "id": "preservation_interleaved_cached_paths",
+    "stage": "base",
+    "scenario": "trace",
+    "steps": [
+      {
+        "op": "learn"
+      },
+      {
+        "op": "cache",
+        "source": "h3",
+        "destination": "h1"
+      },
+      {
+        "op": "observe",
+        "source": "h3",
+        "destination": "h1",
+        "expect": {
+          "h1": true,
+          "h2": false,
+          "h4": false
+        }
+      },
+      {
+        "op": "cache",
+        "source": "h2",
+        "destination": "h3"
+      },
+      {
+        "op": "observe",
+        "source": "h2",
+        "destination": "h3",
+        "expect": {
+          "h1": false,
+          "h3": true,
+          "h4": false
+        }
+      },
+      {
+        "op": "cache",
+        "source": "h1",
+        "destination": "h2"
+      },
+      {
+        "op": "observe",
+        "source": "h1",
+        "destination": "h2",
+        "expect": {
+          "h2": true,
+          "h3": false,
+          "h4": false
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h3",
+        "destination": "h1",
+        "expect": {
+          "h1": true,
+          "h2": false,
+          "h4": false
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h1",
+        "destination": "h3",
+        "expect": {
+          "h2": false,
+          "h3": true,
+          "h4": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "preservation_repeated_component_delivery",
+    "stage": "base",
+    "scenario": "trace",
+    "steps": [
+      {
+        "op": "learn"
+      },
+      {
+        "op": "observe",
+        "source": "h3",
+        "destination": "h4",
+        "expect": {
+          "h1": false,
+          "h2": false,
+          "h4": true
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h3",
+        "destination": "h2",
+        "expect": {
+          "h1": false,
+          "h2": true,
+          "h4": false
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h4",
+        "destination": "h3",
+        "expect": {
+          "h1": false,
+          "h2": false,
+          "h3": true
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h2",
+        "destination": "h3",
+        "expect": {
+          "h1": false,
+          "h3": true,
+          "h4": false
+        }
+      },
+      {
+        "op": "learn"
+      },
+      {
+        "op": "observe",
+        "source": "h3",
+        "destination": "h4",
+        "expect": {
+          "h1": false,
+          "h2": false,
+          "h4": true
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h4",
+        "destination": "h2",
+        "expect": {
+          "h1": false,
+          "h2": true,
+          "h3": false
+        }
+      },
+      {
+        "op": "observe",
+        "source": "h3",
+        "destination": "h1",
+        "expect": {
+          "h1": true,
+          "h2": false,
+          "h4": false
+        }
+      }
+    ]
+  }
+]

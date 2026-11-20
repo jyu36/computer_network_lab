@@ -1,0 +1,41 @@
+{
+  "purpose": "Researcher-only original-versus-proposal baseline preservation screen",
+  "design_timing": "Defined after simplification proposals were frozen and their development baseline results were available, before any of these held-out runs. This is a post-hoc exploratory check, not a preregistered unseen benchmark.",
+  "configuration_file": "week_four/held_out/network_configurations.json",
+  "experiments": [
+    {
+      "configuration": "held_out_chain_sparse_ports",
+      "case_file": "week_four/held_out/held_out_chain_sparse_ports_cases.json",
+      "case_ids": [
+        "preservation_cold_destination",
+        "preservation_interleaved_cached_paths",
+        "preservation_repeated_component_delivery"
+      ]
+    },
+    {
+      "configuration": "held_out_two_components_sparse_ports",
+      "case_file": "week_four/held_out/held_out_two_components_sparse_ports_cases.json",
+      "case_ids": [
+        "preservation_cold_destination",
+        "preservation_interleaved_cached_paths",
+        "preservation_repeated_component_delivery"
+      ]
+    }
+  ],
+  "asset_sha256": {
+    "week_four/held_out/network_configurations.json": "a4b6c6bc60e7e5b8ec4bef66f520abf84a396ab6c2dbf00fd6e1c60435e07d16",
+    "week_four/held_out/held_out_chain_sparse_ports_cases.json": "31bea70dbccc1deff6ab2a1671362c4899d66e0cc52e1327f4de9aaa3b6c7441",
+    "week_four/held_out/held_out_two_components_sparse_ports_cases.json": "7610a4200214edf2345c06c7b39eec0565bd372157de3a02261fc7901f358f0d"
+  },
+  "controller_versions": [
+    "source_a/original",
+    "source_a/simplified",
+    "source_b/original",
+    "source_b/simplified"
+  ],
+  "runner_launches": 8,
+  "case_executions": 24,
+  "acceptance": "Both variants must pass every selected case and have matching ordered tagged-packet endpoint observations. Missing/error evidence is inconclusive; inconclusive forwarding-table analyses are recorded, not counted as verified.",
+  "scope": "Concrete ARP/IPv4 ICMP sequences in two fixed loop-free fixtures. No movement, policy updates, arbitrary packet equivalence, performance equivalence or formal proof.",
+  "isolation": "Do not provide this directory, runner or its output to simplification or maintenance agents. Folder instructions provide workflow isolation, not an OS access boundary."
+}

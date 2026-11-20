@@ -1,0 +1,393 @@
+{
+  "record_type": "Reconstructed from supplied Ubuntu terminal output, not original runner JSON or packet captures",
+  "suite": "base",
+  "profile": "FULL",
+  "total_cases": 42,
+  "total_passed": 42,
+  "proposals": [
+    {
+      "source": "source_a",
+      "case_counts": {
+        "PASS": 21,
+        "FAIL": 0,
+        "ERROR": 0
+      },
+      "configuration_count": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 407,
+        "failed": 0,
+        "inconclusive": 74
+      },
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/baseline_20261120T044049Z/source_a/20261120T044049.132337Z_controller",
+      "cases": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.9
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 18.5
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.5
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.2
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 64.7
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.9
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 37.8
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.8
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.5
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 101.7
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.4
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.1
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 202.4
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.5
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 27.9
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.0
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.5
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 66.9
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 20.1
+        }
+      ],
+      "table_checks_by_configuration": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "verified": 19,
+          "failed": 0,
+          "inconclusive": 0
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "verified": 61,
+          "failed": 0,
+          "inconclusive": 0
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "verified": 36,
+          "failed": 0,
+          "inconclusive": 1
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "verified": 88,
+          "failed": 0,
+          "inconclusive": 3
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "verified": 149,
+          "failed": 0,
+          "inconclusive": 20
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "verified": 19,
+          "failed": 0,
+          "inconclusive": 12
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "verified": 35,
+          "failed": 0,
+          "inconclusive": 38
+        }
+      ]
+    },
+    {
+      "source": "source_b",
+      "case_counts": {
+        "PASS": 21,
+        "FAIL": 0,
+        "ERROR": 0
+      },
+      "configuration_count": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 404,
+        "failed": 0,
+        "inconclusive": 77
+      },
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/baseline_20261120T044049Z/source_b/20261120T045019.020094Z_controller",
+      "cases": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.9
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 19.1
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.6
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.2
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 64.7
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.9
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 38.1
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.8
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.5
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 101.1
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.7
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.9
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 201.4
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.7
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 27.8
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.0
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "id": "unknown_destination_flooding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "id": "known_destination_forwarding",
+          "status": "PASS",
+          "duration_seconds_as_printed": 66.3
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "id": "arp_and_ping_connectivity",
+          "status": "PASS",
+          "duration_seconds_as_printed": 20.2
+        }
+      ],
+      "table_checks_by_configuration": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "verified": 19,
+          "failed": 0,
+          "inconclusive": 0
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "verified": 61,
+          "failed": 0,
+          "inconclusive": 0
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "verified": 36,
+          "failed": 0,
+          "inconclusive": 1
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "verified": 85,
+          "failed": 0,
+          "inconclusive": 6
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "verified": 149,
+          "failed": 0,
+          "inconclusive": 20
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "verified": 19,
+          "failed": 0,
+          "inconclusive": 12
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "verified": 35,
+          "failed": 0,
+          "inconclusive": 38
+        }
+      ]
+    }
+  ],
+  "conclusion": "Both frozen proposals passed baseline screen; held-out original-versus-proposal behavior comparisons remain pending.",
+  "limitations": [
+    "Original Ubuntu packet captures, detailed logs, source snapshots and analysis.json have not been retrieved to this directory.",
+    "Inconclusive table checks remain unverified.",
+    "Test case durations are evaluation time, not AI implementation effort."
+  ]
+}
