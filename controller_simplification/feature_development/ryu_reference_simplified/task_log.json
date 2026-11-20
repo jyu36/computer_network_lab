@@ -1,0 +1,42 @@
+{
+  "task": "combined_blocking_movement_runtime",
+  "changes": [
+    "Preserved the baseline learning-switch structure, copyright, Ryu WSGI service, status interface, and asynchronous barrier synchronization.",
+    "Validated and normalized RAIN_BLOCKED at startup; added priority-2 destination drop rules and controller-side destination filtering after source learning.",
+    "Detected observed same-switch source movement and deleted forwarding-cookie rules matching the moved destination before updating its learned location; policy rules remain intact.",
+    "Added fully validated PUT /rain/policy replacement with serialized update requests, switch Flow-Mods, and barrier-confirmed completion or a non-2xx failure.",
+    "Reported the active normalized policy in status and reconciled the latest policy when switches connect, including changes between features negotiation and MAIN state.",
+    "Used distinct cookies for cached forwarding and policy rules; cleared stale controller-owned forwarding rules on a fresh connection."
+  ],
+  "checks": [
+    {
+      "command_or_check": "Read prompt.txt and controller.py in the specified workspace; manually reviewed the edited controller.py.",
+      "result": "completed",
+      "relevant_output": "Reviewed request validation before mutation, source learning before destination filtering, priority-2 drops above priority-1 forwarding, cookie-scoped movement deletion, connection reconciliation, lock ordering, buffer handling, and asynchronous barrier/error/disconnect handling. This was source inspection, not runtime verification."
+    },
+    {
+      "command_or_check": "python - <<'PY'\nimport ast\nfrom pathlib import Path\nsource = Path('controller.py').read_text()\nast.parse(source, filename='controller.py', feature_version=(3, 10))\nprint('PASS: controller.py parses with Python 3.10 grammar')\nPY",
+      "result": "passed",
+      "relevant_output": "PASS: controller.py parses with Python 3.10 grammar"
+    },
+    {
+      "command_or_check": "Final standard-library AST syntax check after whitespace cleanup: ast.parse(source, filename='controller.py', feature_version=(3, 10)).",
+      "result": "passed",
+      "relevant_output": "PASS: final controller.py parses with Python 3.10 grammar"
+    }
+  ],
+  "encountered_errors": [
+    {
+      "problem": "The initial login-shell commands emitted a conda startup entry-point error, although the workspace discovery and prompt read completed with exit code 0.",
+      "evidence": "Error while loading conda entry point: anaconda-cloud-auth (cannot import name 'AliasGenerator' from 'pydantic' (.../pydantic/__init__.py))",
+      "correction_attempted": "Used login=False for subsequent command execution; did not inspect or modify the external environment.",
+      "resolved": true,
+      "resolution": "Subsequent file reads, editing commands, and AST checks completed without the startup error. The underlying external conda installation was not repaired."
+    }
+  ],
+  "unresolved_issues": [
+    "Ryu loading, WSGI behavior, OVS/OpenFlow processing, and Mininet delivery/movement/policy integration were not executed: the task permits local editing and standard-library AST syntax checks and reserves integration testing for the researcher.",
+    "A policy update that fails after sending updates retains the desired blocklist rather than claiming rollback; completion is reported as non-2xx. As in the baseline, recorded OpenFlow errors prevent subsequent successful synchronization for that process."
+  ],
+  "integration_tests": "not_run"
+}

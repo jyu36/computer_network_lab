@@ -1,0 +1,34 @@
+{
+  "evidence_source": "User-supplied Ubuntu terminal output; raw VM artifacts have not been copied to this Mac.",
+  "vm_results_directory": "/home/jyu164/sdn-project/computer_network_lab/controller_simplification/test_results/comparison_20261120T212549.430106Z",
+  "rerun": {
+    "runner_launches": 4,
+    "case_executions": 4,
+    "passed": 4,
+    "failed": 0,
+    "reused_unchanged_passes": 20
+  },
+  "paired_comparison": {
+    "MATCH": 12,
+    "REJECT": 0,
+    "INCONCLUSIVE": 0
+  },
+  "controllers": {
+    "ryu_reference": {
+      "status": "ACCEPTED_FOR_TESTED_TRACES",
+      "paired_matches": 6
+    },
+    "attempt_01": {
+      "status": "ACCEPTED_FOR_TESTED_TRACES",
+      "paired_matches": 6
+    }
+  },
+  "rerun_forwarding_table_checks": {
+    "verified": 12,
+    "failed": 0,
+    "inconclusive": 16
+  },
+  "interpretation": "Both simplified controllers preserve their originals on the tested packet traces. This is not proof of general equivalence; inconclusive forwarding-table checks remain unverified.",
+  "harness_correction": "The disconnected-destination trace now permits flooding to connected bystanders while requiring zero delivery to the disconnected destination. Controller code was unchanged.",
+  "next_step": "Matched destination-blocking tasks for the four original/simplified starting controllers, followed by baseline and blocking evaluation."
+}

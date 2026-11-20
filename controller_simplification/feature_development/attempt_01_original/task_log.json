@@ -1,0 +1,45 @@
+{
+  "task": "combined_blocking_movement_runtime",
+  "changes": [
+    "Preserved the baseline Ryu learning controller, WSGI endpoints, packet validation, buffering, and asynchronous synchronization structure.",
+    "Validate and normalize RAIN_BLOCKED at startup; enforce destination-only blocking with higher-priority switch drop rules and Packet-In checks; expose the active set in status.",
+    "Detect observed same-switch source movement, update learned locations, and delete cookie-scoped cached destination forwarding without deleting policy rules.",
+    "Add fully validated PUT /rain/policy replacement with serialized updates, strict removal of obsolete drop rules, and barrier-confirmed completion or HTTP 503 on failure.",
+    "Install the current policy on joining switches and include connections joining during a policy operation in its barrier acknowledgement."
+  ],
+  "checks": [
+    {
+      "command": "python - <<'PY'\nimport ast\nfrom pathlib import Path\nast.parse(Path('controller.py').read_text(), filename='controller.py', feature_version=(3, 10))\nprint('PASS: controller.py parses using Python 3.10 grammar')\nPY",
+      "result": "passed",
+      "output": "PASS: controller.py parses using Python 3.10 grammar",
+      "notes": "Executed after editing; repeated while writing this log. Host Python is 3.12; the AST parser explicitly used Python 3.10 grammar. No Ryu imports or runtime tests were performed."
+    },
+    {
+      "command": "cat controller.py; manual source review (no code execution)",
+      "result": "completed",
+      "output": "Reviewed the edited controller for policy validation before mutation, normalized status, forwarding/drop priority separation, movement deletion scope, connection identity checks, lock release during barrier waits, and buffer handling."
+    }
+  ],
+  "encountered_errors": [
+    {
+      "problem": "The initial login-shell reads emitted a conda initialization error.",
+      "evidence": "Error while loading conda entry point: anaconda-cloud-auth (cannot import name 'AliasGenerator' from 'pydantic' (/opt/anaconda3/lib/python3.12/site-packages/pydantic/__init__.py))",
+      "correction_attempted": "Used login=False for subsequent shell commands; did not inspect or modify environment packages.",
+      "resolved": true,
+      "resolution": "Subsequent commands had no conda initialization output; the underlying environment issue was not repaired."
+    },
+    {
+      "problem": "The initial controller edit was rejected by the filesystem sandbox.",
+      "evidence": "Path.write_text raised PermissionError: [Errno 1] Operation not permitted: 'controller.py'; command exited 1 before changing the file.",
+      "correction_attempted": "Retried the same scoped edit using require_escalated for the user-authorized task folder.",
+      "resolved": true,
+      "resolution": "The retry exited 0 and the edited controller was read back and syntax-checked."
+    }
+  ],
+  "unresolved_issues": [
+    "Ryu/OpenFlow/OVS/Mininet integration tests and execution in the target Python 3.10 environment were not run, as required by the experiment restrictions; switch behavior remains unverified.",
+    "The underlying login-shell conda initialization problem was not repaired; non-login commands worked.",
+    "A valid policy request that fails during switch updates retains its desired normalized controller policy; partial switch application is not rolled back, and the request returns failure. Recorded OpenFlow errors continue to prevent successful synchronization, preserving the baseline behavior."
+  ],
+  "integration_tests": "not_run"
+}

@@ -1,0 +1,59 @@
+{
+  "task": "combined_blocking_movement_runtime",
+  "changes": [
+    "Validate and normalize RAIN_BLOCKED at startup; expose the active sorted policy in status.",
+    "Install priority-2 destination drops on every switch and reject blocked Packet-In destinations after source learning.",
+    "Detect observed source movement and delete destination forwarding flows for that MAC using a forwarding-only cookie.",
+    "Add fully validated PUT /rain/policy replacements with serialized updates, policy-only deletions and asynchronous barrier acknowledgment.",
+    "Share the existing sync waiter between sync and policy requests; preserve error logging, buffering, learning and WSGI integration.",
+    "Refresh current policy on MAIN registration to cover policy changes during switch negotiation; clear cached forwarding from prior connections."
+  ],
+  "checks": [
+    {
+      "command": "pwd",
+      "result": "passed with shell startup warning",
+      "output": "Working directory was the user-designated attempt_01_simplified folder."
+    },
+    {
+      "command": "rg --files -g 'AGENTS.md' -g '!**/.git/**' -g '!**/node_modules/**' -g '!**/.venv/**'",
+      "result": "exit 1; no matching paths output",
+      "output": "Initial workspace-local instruction discovery occurred before reading the prompt restrictions; no additional file contents were read."
+    },
+    {
+      "command": "cat prompt.txt; cat controller.py (separate reads)",
+      "result": "completed",
+      "output": "Read the task specification and baseline, then reread the modified controller for source review."
+    },
+    {
+      "command": "python standard-library AST check: ast.parse(Path('controller.py').read_text(), filename='controller.py', feature_version=(3, 10))",
+      "result": "passed",
+      "output": "PASS: controller.py parses with Python 3.10 grammar; no modules imported or bytecode files created"
+    },
+    {
+      "command": "Manual source review of controller.py",
+      "result": "completed; no runtime verification",
+      "output": "Reviewed policy priority and cookie isolation, movement invalidation, validation-before-mutation, shared locking, connection identity, barrier replies, disconnects, timeouts and packet buffering."
+    }
+  ],
+  "encountered_errors": [
+    {
+      "problem": "Login-shell startup printed a conda entry-point import error.",
+      "evidence": "Error while loading conda entry point: anaconda-cloud-auth (cannot import name 'AliasGenerator' from 'pydantic' ...)",
+      "correction_attempted": "Used login=False for subsequent shell commands.",
+      "resolved": true,
+      "resolution": "Subsequent commands had no startup warning; the underlying conda installation was not modified."
+    },
+    {
+      "problem": "Initial controller write was denied by the filesystem sandbox.",
+      "evidence": "PermissionError: [Errno 1] Operation not permitted: 'controller.py'",
+      "correction_attempted": "Retried the same edit with scoped elevated access to the user-designated workspace.",
+      "resolved": true,
+      "resolution": "The retry returned Updated controller.py and rereading confirmed the saved edits."
+    }
+  ],
+  "unresolved_issues": [
+    "Ryu loading and OpenFlow/OVS/Mininet integration were not checked: the prompt permits local editing and standard-library AST syntax checks and reserves integration testing for the researcher.",
+    "The AST check used Python 3.10 grammar on the available Python interpreter; it does not establish runtime compatibility with the researcher environment."
+  ],
+  "integration_tests": "not_run"
+}

@@ -1,5 +1,5 @@
 {
-  "phase": "First preservation run exposed partition-trace oracle error; raw outcome preserved; corrected affected-case evaluation pending.",
+  "phase": "Both simplifications accepted for tested traces after corrected partition-case recheck; ready for matched destination-blocking tasks.",
   "intended_model_user_reported": "GPT-6.1 Sol",
   "intended_reasoning_setting": "Medium",
   "protocol": {
@@ -39,9 +39,17 @@
         "total": 21,
         "record": "controller_simplification/test_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json",
         "evidence_source": "user-supplied Ubuntu terminal output",
-        "comparison_acceptance": "PENDING"
+        "comparison_acceptance": "ACCEPTED_FOR_TESTED_TRACES"
       },
-      "previous_result_label": "source_a"
+      "previous_result_label": "source_a",
+      "behavior_comparison": {
+        "status": "ACCEPTED_FOR_TESTED_TRACES",
+        "record": "controller_simplification/test_results/comparison_20261120T212549.430106Z_reconstructed/comparison_summary.json",
+        "paired_matches": 6,
+        "paired_rejects": 0,
+        "paired_inconclusive": 0,
+        "table_limitation": "Inconclusive forwarding-table branches remain unverified."
+      }
     },
     "attempt_01": {
       "source_file": "week_three/PASS_attempt_01/controller.py",
@@ -67,12 +75,58 @@
         "total": 21,
         "record": "controller_simplification/test_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json",
         "evidence_source": "user-supplied Ubuntu terminal output",
-        "comparison_acceptance": "PENDING"
+        "comparison_acceptance": "ACCEPTED_FOR_TESTED_TRACES"
       },
-      "previous_result_label": "source_b"
+      "previous_result_label": "source_b",
+      "behavior_comparison": {
+        "status": "ACCEPTED_FOR_TESTED_TRACES",
+        "record": "controller_simplification/test_results/comparison_20261120T212549.430106Z_reconstructed/comparison_summary.json",
+        "paired_matches": 6,
+        "paired_rejects": 0,
+        "paired_inconclusive": 0,
+        "table_limitation": "Inconclusive forwarding-table branches remain unverified."
+      }
     }
   },
   "comparison_test_settings": "controller_simplification/comparison_tests/settings.json",
   "comparison_test_settings_sha256": "1e703f8d11c55a70abbab5392d689b16a850112ead173a0df6131780d86d5944",
-  "folder_layout_note": "Folders renamed for readability after AI tasks finished. Controller bytes and historical results are unchanged. Older Ubuntu batches may still use week_four and source_a/source_b."
+  "folder_layout_note": "Folders renamed for readability after AI tasks finished. Controller bytes and historical results are unchanged. Older Ubuntu batches may still use week_four and source_a/source_b.",
+  "comparison_result_record": "controller_simplification/test_results/comparison_20261120T212549.430106Z_reconstructed/comparison_summary.json",
+  "feature_development": {
+    "status": "All four AI outputs saved; AST syntax and JSON logs checked locally; frozen starting controllers and identical prompts verified; Ubuntu integration evaluation pending.",
+    "workspaces": [
+      {
+        "workspace": "controller_simplification/feature_development/ryu_reference_original",
+        "starting_controller": "controller_simplification/controllers/ryu_reference/original.py",
+        "starting_sha256": "22909a9959b330792f0e47f3c241bb3ac05e27819c27c80816b803f0b9efb89c",
+        "completed_controller_sha256": "ad84f1e9e861b6ae8c2d26b51b7d60b785d9e31e4966dfe110ed45575cd1b1c5"
+      },
+      {
+        "workspace": "controller_simplification/feature_development/ryu_reference_simplified",
+        "starting_controller": "controller_simplification/controllers/ryu_reference/simplified.py",
+        "starting_sha256": "b651176c307b252cea2ddab60c0b9cadaef71609ed02a36ed927a859f6405ff3",
+        "completed_controller_sha256": "4a1d90a527ef5e8a04f6f7608467c05953b29c0cf623c1a781acdc3dac6cc4ee"
+      },
+      {
+        "workspace": "controller_simplification/feature_development/attempt_01_original",
+        "starting_controller": "controller_simplification/controllers/attempt_01/original.py",
+        "starting_sha256": "6ebcd9bd02d623d7df5b3886e78619c3be92de51bfaf069c5bc69a755c8605ca",
+        "completed_controller_sha256": "c5ce34c9db7d788f6165c1387153b6b770714fd189feb61302a0833636f242d5"
+      },
+      {
+        "workspace": "controller_simplification/feature_development/attempt_01_simplified",
+        "starting_controller": "controller_simplification/controllers/attempt_01/simplified.py",
+        "starting_sha256": "68241c667ed69e8908db8612b4d857af356502b0f3eacafdfa93e370d417093c",
+        "completed_controller_sha256": "e09371c6e9e79926c459288b0d91ec8a1f3102b2a34fb7c3cc5cde0197a5277b"
+      }
+    ],
+    "task_schedule": "All three features in one maintenance task per starting controller; user-selected reduced design, not sequential feature trajectories.",
+    "prompt_sha256": "fd2ccd2195dc322230f640ec8e09b55616b67b5c063e7097148fc731e21259f9",
+    "allowed_task_outputs": [
+      "controller.py",
+      "task_log.json"
+    ],
+    "integration_evaluation": "All nine development cases across seven existing configurations per controller; four main launches, 252 case executions total.",
+    "effort_limit": "Use identical model/reasoning settings and one implementation interaction per controller; no exact hard token/time limit specified."
+  }
 }

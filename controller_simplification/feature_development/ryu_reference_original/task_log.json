@@ -1,0 +1,33 @@
+{
+  "task": "combined_blocking_movement_runtime",
+  "changes": [
+    "Preserved baseline learning, packet buffering, full-packet table miss, WSGI interfaces, error reporting, and license notices.",
+    "Validated and normalized RAIN_BLOCKED at startup; added destination drop flows with priority above cached forwarding and controller-side destination checks after source learning.",
+    "Detected source MAC ingress changes and deleted tagged cached destination flows for the moved MAC without deleting policy rules.",
+    "Added PUT /rain/policy with complete-body validation, normalized replacement semantics, serialized runtime replacements, and asynchronous barrier-confirmed completion.",
+    "Exposed the active sorted policy in status and reconciled current policy on switch initialization and MAIN connection registration, including policy changes between those events."
+  ],
+  "checks": [
+    {
+      "command/check": "python3 standard-library ast.parse(Path('controller.py').read_text(), filename='controller.py', feature_version=(3, 10)) after implementation",
+      "result": "passed",
+      "relevant_output": "PASS: controller.py parses using Python 3.10 grammar"
+    },
+    {
+      "command/check": "Manual review of controller.py using cat controller.py",
+      "result": "completed",
+      "relevant_output": "Reviewed cookie-scoped movement deletions, higher-priority destination drops, validation before mutation, connection policy reconciliation, source learning before controller-side policy checks, buffer handling, and barrier waits with the state lock released. This was source review, not runtime verification."
+    },
+    {
+      "command/check": "python3 standard-library ast.parse(source, filename='controller.py', feature_version=(3, 10)) after final formatting adjustment",
+      "result": "passed",
+      "relevant_output": "PASS: final controller.py parses using Python 3.10 grammar"
+    }
+  ],
+  "encountered_errors": [],
+  "unresolved_issues": [
+    "Ryu loading and OpenFlow/OVS/Mininet integration checks were not run under the task rules; actual network behavior remains unverified.",
+    "A policy request that fails after switch updates begin can leave the requested policy partially applied; failure returns non-2xx and does not promise rollback. Protocol errors remain recorded and prevent later successful synchronization, preserving baseline behavior."
+  ],
+  "integration_tests": "not_run"
+}
