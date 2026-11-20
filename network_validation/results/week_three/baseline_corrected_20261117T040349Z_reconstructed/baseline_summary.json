@@ -1,0 +1,94 @@
+{
+  "source": "Reconstructed from user-supplied Ubuntu terminal output; original packet evidence, flow snapshots and analysis.json files have not been copied to this Mac directory.",
+  "suite": "base",
+  "profile": "FULL",
+  "observation_window_seconds": 1,
+  "total_case_executions": 126,
+  "attempts": [
+    {
+      "attempt": "01",
+      "cases_passed": 21,
+      "configurations": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 405,
+        "failed": 0,
+        "inconclusive": 76
+      },
+      "reported_case_seconds": 566.3,
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_01/20261117T040354.006658Z_controller"
+    },
+    {
+      "attempt": "02",
+      "cases_passed": 21,
+      "configurations": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 403,
+        "failed": 0,
+        "inconclusive": 78
+      },
+      "reported_case_seconds": 558.5,
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_02/20261117T041320.492696Z_controller"
+    },
+    {
+      "attempt": "03",
+      "cases_passed": 21,
+      "configurations": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 404,
+        "failed": 0,
+        "inconclusive": 77
+      },
+      "reported_case_seconds": 567.2,
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_03/20261117T042239.150740Z_controller"
+    },
+    {
+      "attempt": "04",
+      "cases_passed": 21,
+      "configurations": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 406,
+        "failed": 0,
+        "inconclusive": 75
+      },
+      "reported_case_seconds": 554.3,
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_04/20261117T043206.451597Z_controller"
+    },
+    {
+      "attempt": "05",
+      "cases_passed": 21,
+      "configurations": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 407,
+        "failed": 0,
+        "inconclusive": 74
+      },
+      "reported_case_seconds": 547.4,
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_05/20261117T044121.124504Z_controller"
+    },
+    {
+      "attempt": "06",
+      "cases_passed": 21,
+      "configurations": 7,
+      "test_exit_code": 0,
+      "logging_exit_code": 0,
+      "table_checks": {
+        "verified": 407,
+        "failed": 0,
+        "inconclusive": 74
+      },
+      "reported_case_seconds": 556.2,
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_06/20261117T045028.778112Z_controller"
+    }
+  ],
+  "interpretation": "All 126 baseline case executions passed; no reported table failures. Inconclusive table checks remain unverified. This run does not evaluate blocking, movement or runtime features."
+}

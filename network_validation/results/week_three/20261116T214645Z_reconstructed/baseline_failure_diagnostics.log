@@ -1,0 +1,469 @@
+Results saved in: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ cd ~/sdn-project/computer_network_lab
+
+/usr/bin/python3 - <<'PY'
+import json
+from pathlib import Path
+
+batch = Path("network_validation/results/week_three/20261116T214645Z")
+
+for attempt in ("03", "04", "06"):
+    print(f"\n===== ATTEMPT {attempt} =====")
+
+    results = sorted((batch / f"attempt_{attempt}").rglob("result.json"))
+    if not results:
+        print("No result.json found.")
+        continue
+
+    for path in results:
+        result = json.loads(path.read_text())
+        if result.get("status") not in ("FAIL", "ERROR"):
+            continue
+
+        print("\nCASE DIRECTORY:", path.parent)
+        print("RESULT:")
+        print(json.dumps(result, indent=2))
+
+        events_path = path.parent / "events.json"
+        if events_path.exists():
+            events = json.loads(events_path.read_text())
+            statuses = [
+                event for event in events
+                if event.get("method") == "GET"
+                and event.get("path") == "status"
+            ]
+            print("\nLAST STATUS RESPONSES:")
+            print(json.dumps(statuses[-3:], indent=2))
+
+        log = path.parent / "controller.log"
+        if log.exists():
+            print("\nLAST 30 CONTROLLER LOG LINES:")
+            print("\n".join(
+                log.read_text(errors="replace").splitlines()[-30:]
+            ))
+PY
+
+===== ATTEMPT 03 =====
+
+CASE DIRECTORY: network_validation/results/week_three/20261116T214645Z/attempt_03/20261116T220523.168374Z_controller/branching_tree_3_switches_6_hosts/unknown_destination_flooding
+RESULT:
+{
+  "configuration": "branching_tree_3_switches_6_hosts",
+  "id": "unknown_destination_flooding",
+  "stage": "base",
+  "status": "FAIL",
+  "profile": "full",
+  "max_host_pairs": 0,
+  "pair_seed": 0,
+  "error": "Fresh controller was not empty",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+  "checkpoint": "setup",
+  "failure_code": "assertion",
+  "details": {},
+  "duration_seconds": 0.731,
+  "forwarding_table_checks": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0
+  }
+}
+
+LAST STATUS RESPONSES:
+[
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3], \"learned\": {\"1\": {\"22:1c:8e:da:f1:7b\": 5}, \"2\": {\"22:1c:8e:da:f1:7b\": 8}, \"3\": {}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3], \"learned\": {\"1\": {\"22:1c:8e:da:f1:7b\": 5}, \"2\": {\"22:1c:8e:da:f1:7b\": 8}, \"3\": {}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3], \"learned\": {\"1\": {\"22:1c:8e:da:f1:7b\": 5}, \"2\": {\"22:1c:8e:da:f1:7b\": 8}, \"3\": {}}, \"blocked\": [], \"errors\": []}"
+  }
+]
+
+LAST 30 CONTROLLER LOG LINES:
+loading app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_03/controller.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_03/controller.py of LearningController
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(33109) wsgi starting up on http://127.0.0.1:8080
+(33109) accepted ('127.0.0.1', 51772)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "GET /rain/status HTTP/1.1" 200 187 0.000251
+(33109) accepted ('127.0.0.1', 51774)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "GET /rain/status HTTP/1.1" 200 207 0.000125
+(33109) accepted ('127.0.0.1', 51782)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "GET /rain/status HTTP/1.1" 200 264 0.000103
+(33109) accepted ('127.0.0.1', 51790)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "POST /rain/sync HTTP/1.1" 200 145 0.010907
+(33109) accepted ('127.0.0.1', 51792)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "GET /rain/status HTTP/1.1" 200 264 0.000096
+(33109) accepted ('127.0.0.1', 51806)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "GET /rain/status HTTP/1.1" 200 264 0.000082
+(33109) accepted ('127.0.0.1', 51822)
+127.0.0.1 - - [16/Nov/2026 22:07:32] "GET /rain/status HTTP/1.1" 200 264 0.000096
+
+CASE DIRECTORY: network_validation/results/week_three/20261116T214645Z/attempt_03/20261116T220523.168374Z_controller/deep_tree_7_switches_8_hosts/unknown_destination_flooding
+RESULT:
+{
+  "configuration": "deep_tree_7_switches_8_hosts",
+  "id": "unknown_destination_flooding",
+  "stage": "base",
+  "status": "FAIL",
+  "profile": "full",
+  "max_host_pairs": 0,
+  "pair_seed": 0,
+  "error": "Fresh controller was not empty",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+  "checkpoint": "setup",
+  "failure_code": "assertion",
+  "details": {},
+  "duration_seconds": 1.069,
+  "forwarding_table_checks": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0
+  }
+}
+
+LAST STATUS RESPONSES:
+[
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"62:5d:4e:9f:8a:36\": 8}, \"2\": {\"62:5d:4e:9f:8a:36\": 10}, \"3\": {}, \"4\": {\"96:6a:d4:6e:20:e1\": 9, \"62:5d:4e:9f:8a:36\": 9}, \"5\": {\"62:5d:4e:9f:8a:36\": 9}, \"6\": {}, \"7\": {}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"62:5d:4e:9f:8a:36\": 8}, \"2\": {\"62:5d:4e:9f:8a:36\": 10}, \"3\": {}, \"4\": {\"96:6a:d4:6e:20:e1\": 9, \"62:5d:4e:9f:8a:36\": 9}, \"5\": {\"62:5d:4e:9f:8a:36\": 9}, \"6\": {}, \"7\": {}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"62:5d:4e:9f:8a:36\": 8}, \"2\": {\"62:5d:4e:9f:8a:36\": 10}, \"3\": {}, \"4\": {\"96:6a:d4:6e:20:e1\": 9, \"62:5d:4e:9f:8a:36\": 9}, \"5\": {\"62:5d:4e:9f:8a:36\": 9}, \"6\": {}, \"7\": {}}, \"blocked\": [], \"errors\": []}"
+  }
+]
+
+LAST 30 CONTROLLER LOG LINES:
+loading app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_03/controller.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_03/controller.py of LearningController
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(35406) wsgi starting up on http://127.0.0.1:8080
+(35406) accepted ('127.0.0.1', 36184)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "GET /rain/status HTTP/1.1" 200 187 0.000252
+(35406) accepted ('127.0.0.1', 36186)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "GET /rain/status HTTP/1.1" 200 278 0.000120
+(35406) accepted ('127.0.0.1', 36192)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "GET /rain/status HTTP/1.1" 200 381 0.000109
+(35406) accepted ('127.0.0.1', 36202)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "POST /rain/sync HTTP/1.1" 200 145 0.011214
+(35406) accepted ('127.0.0.1', 36208)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "GET /rain/status HTTP/1.1" 200 381 0.000102
+(35406) accepted ('127.0.0.1', 36212)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "GET /rain/status HTTP/1.1" 200 381 0.000082
+(35406) accepted ('127.0.0.1', 36218)
+127.0.0.1 - - [16/Nov/2026 22:09:14] "GET /rain/status HTTP/1.1" 200 381 0.000088
+
+===== ATTEMPT 04 =====
+
+CASE DIRECTORY: network_validation/results/week_three/20261116T214645Z/attempt_04/20261116T221443.112495Z_controller/deep_tree_7_switches_8_hosts/unknown_destination_flooding
+RESULT:
+{
+  "configuration": "deep_tree_7_switches_8_hosts",
+  "id": "unknown_destination_flooding",
+  "stage": "base",
+  "status": "FAIL",
+  "profile": "full",
+  "max_host_pairs": 0,
+  "pair_seed": 0,
+  "error": "Fresh controller was not empty",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+  "checkpoint": "setup",
+  "failure_code": "assertion",
+  "details": {},
+  "duration_seconds": 0.998,
+  "forwarding_table_checks": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0
+  }
+}
+
+LAST STATUS RESPONSES:
+[
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"8e:5e:22:4b:1b:5a\": 4, \"32:a9:6a:a5:59:f4\": 4}, \"2\": {\"8e:5e:22:4b:1b:5a\": 3}, \"3\": {\"8e:5e:22:4b:1b:5a\": 10, \"32:a9:6a:a5:59:f4\": 10}, \"4\": {}, \"5\": {}, \"6\": {\"32:a9:6a:a5:59:f4\": 9}, \"7\": {\"32:a9:6a:a5:59:f4\": 9}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"8e:5e:22:4b:1b:5a\": 4, \"32:a9:6a:a5:59:f4\": 4}, \"2\": {\"8e:5e:22:4b:1b:5a\": 3}, \"3\": {\"8e:5e:22:4b:1b:5a\": 10, \"32:a9:6a:a5:59:f4\": 10}, \"4\": {}, \"5\": {}, \"6\": {\"32:a9:6a:a5:59:f4\": 9}, \"7\": {\"32:a9:6a:a5:59:f4\": 9}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"8e:5e:22:4b:1b:5a\": 4, \"32:a9:6a:a5:59:f4\": 4}, \"2\": {\"8e:5e:22:4b:1b:5a\": 3}, \"3\": {\"8e:5e:22:4b:1b:5a\": 10, \"32:a9:6a:a5:59:f4\": 10}, \"4\": {}, \"5\": {}, \"6\": {\"32:a9:6a:a5:59:f4\": 9}, \"7\": {\"32:a9:6a:a5:59:f4\": 9}}, \"blocked\": [], \"errors\": []}"
+  }
+]
+
+LAST 30 CONTROLLER LOG LINES:
+loading app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_04/controller.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_04/controller.py of LearningController
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(49756) wsgi starting up on http://127.0.0.1:8080
+(49756) accepted ('127.0.0.1', 43146)
+127.0.0.1 - - [16/Nov/2026 22:18:31] "GET /rain/status HTTP/1.1" 200 187 0.000249
+(49756) accepted ('127.0.0.1', 43152)
+127.0.0.1 - - [16/Nov/2026 22:18:32] "GET /rain/status HTTP/1.1" 200 335 0.000304
+(49756) accepted ('127.0.0.1', 43168)
+127.0.0.1 - - [16/Nov/2026 22:18:32] "POST /rain/sync HTTP/1.1" 200 145 0.000547
+(49756) accepted ('127.0.0.1', 43182)
+127.0.0.1 - - [16/Nov/2026 22:18:32] "GET /rain/status HTTP/1.1" 200 428 0.000323
+(49756) accepted ('127.0.0.1', 43184)
+127.0.0.1 - - [16/Nov/2026 22:18:32] "GET /rain/status HTTP/1.1" 200 428 0.000482
+(49756) accepted ('127.0.0.1', 43188)
+127.0.0.1 - - [16/Nov/2026 22:18:32] "GET /rain/status HTTP/1.1" 200 428 0.000115
+
+CASE DIRECTORY: network_validation/results/week_three/20261116T214645Z/attempt_04/20261116T221443.112495Z_controller/partitioned_4_switches_6_hosts/unknown_destination_flooding
+RESULT:
+{
+  "configuration": "partitioned_4_switches_6_hosts",
+  "id": "unknown_destination_flooding",
+  "stage": "base",
+  "status": "FAIL",
+  "profile": "full",
+  "max_host_pairs": 0,
+  "pair_seed": 0,
+  "error": "Fresh controller was not empty",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+  "checkpoint": "setup",
+  "failure_code": "assertion",
+  "details": {},
+  "duration_seconds": 0.817,
+  "forwarding_table_checks": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0
+  }
+}
+
+LAST STATUS RESPONSES:
+[
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4], \"learned\": {\"1\": {}, \"2\": {\"8a:b0:13:aa:25:56\": 6}, \"3\": {\"06:bf:d6:d9:bb:1e\": 5}, \"4\": {\"fe:30:88:dc:e2:dc\": 6}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4], \"learned\": {\"1\": {}, \"2\": {\"8a:b0:13:aa:25:56\": 6}, \"3\": {\"06:bf:d6:d9:bb:1e\": 5}, \"4\": {\"fe:30:88:dc:e2:dc\": 6}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4], \"learned\": {\"1\": {}, \"2\": {\"8a:b0:13:aa:25:56\": 6}, \"3\": {\"06:bf:d6:d9:bb:1e\": 5}, \"4\": {\"fe:30:88:dc:e2:dc\": 6}}, \"blocked\": [], \"errors\": []}"
+  }
+]
+
+LAST 30 CONTROLLER LOG LINES:
+loading app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_04/controller.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_04/controller.py of LearningController
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(57259) wsgi starting up on http://127.0.0.1:8080
+(57259) accepted ('127.0.0.1', 56204)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "GET /rain/status HTTP/1.1" 200 187 0.000341
+(57259) accepted ('127.0.0.1', 56210)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "GET /rain/status HTTP/1.1" 200 219 0.000150
+(57259) accepted ('127.0.0.1', 56222)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "GET /rain/status HTTP/1.1" 200 298 0.000196
+(57259) accepted ('127.0.0.1', 56238)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "POST /rain/sync HTTP/1.1" 200 145 0.000585
+(57259) accepted ('127.0.0.1', 56246)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "GET /rain/status HTTP/1.1" 200 298 0.000107
+(57259) accepted ('127.0.0.1', 56252)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "GET /rain/status HTTP/1.1" 200 298 0.000078
+(57259) accepted ('127.0.0.1', 56266)
+127.0.0.1 - - [16/Nov/2026 22:22:29] "GET /rain/status HTTP/1.1" 200 298 0.000400
+
+===== ATTEMPT 06 =====
+
+CASE DIRECTORY: network_validation/results/week_three/20261116T214645Z/attempt_06/20261116T223311.475255Z_controller/deep_tree_7_switches_8_hosts/unknown_destination_flooding
+RESULT:
+{
+  "configuration": "deep_tree_7_switches_8_hosts",
+  "id": "unknown_destination_flooding",
+  "stage": "base",
+  "status": "FAIL",
+  "profile": "full",
+  "max_host_pairs": 0,
+  "pair_seed": 0,
+  "error": "Fresh controller was not empty",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+  "checkpoint": "setup",
+  "failure_code": "assertion",
+  "details": {},
+  "duration_seconds": 1.022,
+  "forwarding_table_checks": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0
+  }
+}
+
+LAST STATUS RESPONSES:
+[
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"ea:39:86:a8:48:88\": 8, \"fe:d7:0e:57:63:11\": 4}, \"2\": {\"ea:39:86:a8:48:88\": 10}, \"3\": {\"ea:39:86:a8:48:88\": 3, \"fe:d7:0e:57:63:11\": 10}, \"4\": {\"ea:39:86:a8:48:88\": 9}, \"5\": {\"da:b8:b3:00:da:8b\": 9, \"ea:39:86:a8:48:88\": 9}, \"6\": {\"fe:d7:0e:57:63:11\": 9}, \"7\": {\"fe:d7:0e:57:63:11\": 9, \"ea:39:86:a8:48:88\": 9}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"ea:39:86:a8:48:88\": 8, \"fe:d7:0e:57:63:11\": 4}, \"2\": {\"ea:39:86:a8:48:88\": 10}, \"3\": {\"ea:39:86:a8:48:88\": 3, \"fe:d7:0e:57:63:11\": 10}, \"4\": {\"ea:39:86:a8:48:88\": 9}, \"5\": {\"da:b8:b3:00:da:8b\": 9, \"ea:39:86:a8:48:88\": 9}, \"6\": {\"fe:d7:0e:57:63:11\": 9}, \"7\": {\"fe:d7:0e:57:63:11\": 9, \"ea:39:86:a8:48:88\": 9}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4, 5, 6, 7], \"learned\": {\"1\": {\"ea:39:86:a8:48:88\": 8, \"fe:d7:0e:57:63:11\": 4}, \"2\": {\"ea:39:86:a8:48:88\": 10}, \"3\": {\"ea:39:86:a8:48:88\": 3, \"fe:d7:0e:57:63:11\": 10}, \"4\": {\"ea:39:86:a8:48:88\": 9}, \"5\": {\"da:b8:b3:00:da:8b\": 9, \"ea:39:86:a8:48:88\": 9}, \"6\": {\"fe:d7:0e:57:63:11\": 9}, \"7\": {\"fe:d7:0e:57:63:11\": 9, \"ea:39:86:a8:48:88\": 9}}, \"blocked\": [], \"errors\": []}"
+  }
+]
+
+LAST 30 CONTROLLER LOG LINES:
+loading app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_06/controller.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_06/controller.py of LearningSwitch
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(78506) wsgi starting up on http://127.0.0.1:8080
+(78506) accepted ('127.0.0.1', 43256)
+127.0.0.1 - - [16/Nov/2026 22:36:59] "GET /rain/status HTTP/1.1" 200 187 0.000252
+(78506) accepted ('127.0.0.1', 43264)
+127.0.0.1 - - [16/Nov/2026 22:36:59] "GET /rain/status HTTP/1.1" 200 322 0.000258
+(78506) accepted ('127.0.0.1', 43268)
+127.0.0.1 - - [16/Nov/2026 22:37:00] "GET /rain/status HTTP/1.1" 200 520 0.000130
+(78506) accepted ('127.0.0.1', 43284)
+127.0.0.1 - - [16/Nov/2026 22:37:00] "POST /rain/sync HTTP/1.1" 200 145 0.000477
+(78506) accepted ('127.0.0.1', 43300)
+127.0.0.1 - - [16/Nov/2026 22:37:00] "GET /rain/status HTTP/1.1" 200 520 0.000098
+(78506) accepted ('127.0.0.1', 43308)
+127.0.0.1 - - [16/Nov/2026 22:37:00] "GET /rain/status HTTP/1.1" 200 520 0.000077
+(78506) accepted ('127.0.0.1', 43324)
+127.0.0.1 - - [16/Nov/2026 22:37:00] "GET /rain/status HTTP/1.1" 200 520 0.000100
+
+CASE DIRECTORY: network_validation/results/week_three/20261116T214645Z/attempt_06/20261116T223311.475255Z_controller/partitioned_4_switches_6_hosts/unknown_destination_flooding
+RESULT:
+{
+  "configuration": "partitioned_4_switches_6_hosts",
+  "id": "unknown_destination_flooding",
+  "stage": "base",
+  "status": "FAIL",
+  "profile": "full",
+  "max_host_pairs": 0,
+  "pair_seed": 0,
+  "error": "Fresh controller was not empty",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+  "checkpoint": "setup",
+  "failure_code": "assertion",
+  "details": {},
+  "duration_seconds": 0.771,
+  "forwarding_table_checks": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0
+  }
+}
+
+LAST STATUS RESPONSES:
+[
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4], \"learned\": {\"1\": {}, \"2\": {\"2a:a5:02:bc:25:e3\": 6}, \"3\": {}, \"4\": {}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4], \"learned\": {\"1\": {}, \"2\": {\"2a:a5:02:bc:25:e3\": 6}, \"3\": {}, \"4\": {}}, \"blocked\": [], \"errors\": []}"
+  },
+  {
+    "method": "GET",
+    "path": "status",
+    "body": null,
+    "status": 200,
+    "response": "{\"switches\": [1, 2, 3, 4], \"learned\": {\"1\": {}, \"2\": {\"2a:a5:02:bc:25:e3\": 6}, \"3\": {}, \"4\": {}}, \"blocked\": [], \"errors\": []}"
+  }
+]
+
+LAST 30 CONTROLLER LOG LINES:
+loading app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_06/controller.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app /home/jyu164/sdn-project/computer_network_lab/week_three/attempt_06/controller.py of LearningSwitch
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(85942) wsgi starting up on http://127.0.0.1:8080
+(85942) accepted ('127.0.0.1', 39618)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "GET /rain/status HTTP/1.1" 200 187 0.000276
+(85942) accepted ('127.0.0.1', 39634)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "GET /rain/status HTTP/1.1" 200 219 0.000115
+(85942) accepted ('127.0.0.1', 39642)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "GET /rain/status HTTP/1.1" 200 254 0.000113
+(85942) accepted ('127.0.0.1', 39654)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "POST /rain/sync HTTP/1.1" 200 145 0.000392
+(85942) accepted ('127.0.0.1', 39658)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "GET /rain/status HTTP/1.1" 200 254 0.000095
+(85942) accepted ('127.0.0.1', 39664)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "GET /rain/status HTTP/1.1" 200 254 0.000080
+(85942) accepted ('127.0.0.1', 39672)
+127.0.0.1 - - [16/Nov/2026 22:40:55] "GET /rain/status HTTP/1.1" 200 254 0.000159
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ 

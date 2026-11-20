@@ -1,0 +1,1656 @@
+{
+  "record_type": "Reconstructed from user-supplied terminal transcript, not original runner JSON or packet evidence",
+  "batch_id": "runtime_20261117T025716Z",
+  "source_transcript_sha256": "fa46e1b5b50a95c14c11f2591b4b4d270f35f11d7e00767fde23289dbe02709a",
+  "generation_and_maintenance_model_user_reported": "GPT-6.1-Sol / Medium",
+  "suite": "full",
+  "profile": "FULL",
+  "configurations_per_attempt": 7,
+  "cases_per_configuration": 9,
+  "total_cases": 189,
+  "total_passed": 189,
+  "completed_first_maintenance_trajectory": [
+    "01",
+    "02",
+    "05"
+  ],
+  "conclusion": "All three selected variants passed 63/63 full cumulative development cases. Their first observed blocking -> movement -> runtime maintenance trajectories reached the final step without detected assertion regressions. Test/log exit codes were zero. Inconclusive table checks are not verified proofs.",
+  "limitations": [
+    "This reconstruction has not retrieved or independently verified the original Ubuntu evidence files.",
+    "Development-test results do not establish held-out evaluation success or general correctness.",
+    "One observed maintenance trajectory per selected generated baseline, not the full human-reference and repeated-trajectory comparison.",
+    "Baseline failures for attempts 03, 04 and 06 still require harness/controller triage; generation selection remains provisional.",
+    "Model labels are user-reported; token usage, elapsed generation effort and spending are not established by this transcript."
+  ],
+  "next_steps": [
+    "Retrieve and preserve original Ubuntu JSON, source snapshots, logs, table analyses and packet evidence.",
+    "Investigate original baseline precondition failures and distinguish model defects from harness/background-traffic issues before finalizing selection.",
+    "Complete the agreed human-reference maintenance comparison and independent repetitions if affordable.",
+    "Evaluate held-out cases separately without exposing them to coding agents; summarize costs, limitations and failure explanations."
+  ],
+  "attempts": [
+    {
+      "attempt": "01",
+      "test_exit_code": 0,
+      "terminal_log_exit_code": 0,
+      "case_counts": {
+        "PASS": 63,
+        "FAIL": 0,
+        "ERROR": 0
+      },
+      "stage_counts": {
+        "base": {
+          "passed": 21,
+          "total": 21
+        },
+        "blocklist": {
+          "passed": 14,
+          "total": 14
+        },
+        "movement": {
+          "passed": 14,
+          "total": 14
+        },
+        "runtime": {
+          "passed": 14,
+          "total": 14
+        }
+      },
+      "observed_outcome": "PASS",
+      "forwarding_table_checks": {
+        "verified": 561,
+        "failed": 0,
+        "inconclusive": 86
+      },
+      "original_ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z/attempt_01/20261117T025720.412017Z_controller",
+      "cases": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 18.6,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.7,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.3,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.2,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.4,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 63.9,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.9,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.7,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.2,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.4,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.7,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.3,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 37.5,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.8,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.9,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.3,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.8,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.3,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 99.6,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.2,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.2,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.3,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.9,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.2,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.8,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.0,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 200.0,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.6,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.7,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.2,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 8.7,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.6,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 27.9,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.0,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.7,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.9,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.2,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 16.7,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.2,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 66.2,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 20.1,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.3,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.6,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.6,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.9,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 25.9,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.9,
+          "message": ""
+        }
+      ]
+    },
+    {
+      "attempt": "02",
+      "test_exit_code": 0,
+      "terminal_log_exit_code": 0,
+      "case_counts": {
+        "PASS": 63,
+        "FAIL": 0,
+        "ERROR": 0
+      },
+      "stage_counts": {
+        "base": {
+          "passed": 21,
+          "total": 21
+        },
+        "blocklist": {
+          "passed": 14,
+          "total": 14
+        },
+        "movement": {
+          "passed": 14,
+          "total": 14
+        },
+        "runtime": {
+          "passed": 14,
+          "total": 14
+        }
+      },
+      "observed_outcome": "PASS",
+      "forwarding_table_checks": {
+        "verified": 564,
+        "failed": 0,
+        "inconclusive": 83
+      },
+      "original_ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z/attempt_02/20261117T031145.745968Z_controller",
+      "cases": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 18.3,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.5,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.2,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.9,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 63.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.6,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.7,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.2,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.4,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.6,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.3,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 37.9,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.6,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.8,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.2,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.4,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.1,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 98.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.9,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.0,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.3,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.8,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.9,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.7,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 198.3,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.8,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.2,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 8.4,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.0,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 27.7,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.8,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.8,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.2,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 16.6,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.1,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 65.6,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 19.7,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.1,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.4,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.4,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.8,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 25.5,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.7,
+          "message": ""
+        }
+      ]
+    },
+    {
+      "attempt": "05",
+      "test_exit_code": 0,
+      "terminal_log_exit_code": 0,
+      "case_counts": {
+        "PASS": 63,
+        "FAIL": 0,
+        "ERROR": 0
+      },
+      "stage_counts": {
+        "base": {
+          "passed": 21,
+          "total": 21
+        },
+        "blocklist": {
+          "passed": 14,
+          "total": 14
+        },
+        "movement": {
+          "passed": 14,
+          "total": 14
+        },
+        "runtime": {
+          "passed": 14,
+          "total": 14
+        }
+      },
+      "observed_outcome": "PASS",
+      "forwarding_table_checks": {
+        "verified": 561,
+        "failed": 0,
+        "inconclusive": 86
+      },
+      "original_ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z/attempt_05/20261117T032600.330012Z_controller",
+      "cases": [
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 18.5,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.5,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.2,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.2,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.4,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.0,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_3_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 63.6,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.6,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.8,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.9,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.4,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.5,
+          "message": ""
+        },
+        {
+          "configuration": "single_switch_5_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.4,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.0,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 37.5,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.6,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.4,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.7,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.1,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 12.4,
+          "message": ""
+        },
+        {
+          "configuration": "two_switches_4_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.2,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 98.9,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 0.9,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.1,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.4,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.3,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.8,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.5,
+          "message": ""
+        },
+        {
+          "configuration": "branching_tree_3_switches_6_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.8,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 199.2,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.0,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.9,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.7,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.1,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 8.5,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.8,
+          "message": ""
+        },
+        {
+          "configuration": "deep_tree_7_switches_8_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 1.9,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 27.8,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.8,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.5,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.3,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 5.7,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.1,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 16.6,
+          "message": ""
+        },
+        {
+          "configuration": "isolated_host_2_switches_4_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.2,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "unknown_destination_flooding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.4,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "known_destination_forwarding",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 65.7,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "arp_and_ping_connectivity",
+          "stage": "base",
+          "status": "PASS",
+          "duration_seconds_as_printed": 19.7,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "learned_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.2,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "unknown_destination_blocking",
+          "stage": "blocklist",
+          "status": "PASS",
+          "duration_seconds_as_printed": 3.4,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "host_movement_after_cached_forwarding",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 6.3,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "host_movement_preserves_blocklist",
+          "stage": "movement",
+          "status": "PASS",
+          "duration_seconds_as_printed": 7.7,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "runtime_block_and_unblock_cached_destination",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 25.6,
+          "message": ""
+        },
+        {
+          "configuration": "partitioned_4_switches_6_hosts",
+          "case": "invalid_policy_update_preserves_forwarding",
+          "stage": "runtime",
+          "status": "PASS",
+          "duration_seconds_as_printed": 4.9,
+          "message": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,669 @@
+batch_directory="$PWD/network_validation/results/week_three/baseline_corrected_$(date -u +%Y%m%dT%H%M%SZ)"
+
+if sudo install -d -o "$(id -un)" -g "$(id -gn)" "$batch_directory"; then
+  for attempt in 01 02 03 04 05 06; do
+    case "$attempt" in
+      01|02|05) controller="week_three/PASS_attempt_${attempt}/controller.py" ;;
+      *) controller="week_three/attempt_${attempt}/controller.py" ;;
+    esac
+
+    echo "Testing corrected baseline: Attempt $attempt"
+
+    sudo /usr/bin/python3 network_validation/run_network_tests.py \
+      --controller "$controller" \
+      --suite base \
+      --ryu-manager "$HOME/sdn-project/.venv/bin/ryu-manager" \
+      --results-directory "$batch_directory/attempt_${attempt}" \
+      --verbose \
+      2>&1 | tee "$batch_directory/attempt_${attempt}.terminal.log"
+
+    pipeline_status=("${PIPESTATUS[@]}")
+    result=${pipeline_status[0]}
+    log_result=${pipeline_status[1]}
+
+    echo "Attempt $attempt: test exit code $result; log exit code $log_result" \
+      | tee -a "$batch_directory/batch_summary.txt"
+
+    if [ "$result" -gt 1 ] || [ "$log_result" -ne 0 ]; then
+      echo "Execution or logging error — stopping for investigation."
+      break
+    fi
+  done
+
+  sudo chown -R "$(id -un):$(id -gn)" "$batch_directory"
+  echo "Results saved in: $batch_directory"
+fi
+Already up to date.
+[sudo] password for jyu164: 
+Testing corrected baseline: Attempt 01
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.7s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.6s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.3s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (64.1s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.9s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (38.0s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.8s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (100.6s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.2s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.9s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (200.7s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (3.0s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.9s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (7.0s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.5s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (66.3s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (20.3s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 36 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 88 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 147 verified, 0 failed, 22 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_01/20261117T040354.006658Z_controller
+Attempt 01: test exit code 0; log exit code 0
+Testing corrected baseline: Attempt 02
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.4s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.5s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.2s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (63.7s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.6s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.4s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (1.0s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (99.4s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.1s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (3.0s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (198.7s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.0s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.7s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (6.9s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (65.2s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (19.8s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 34 verified, 0 failed, 3 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 88 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 147 verified, 0 failed, 22 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_02/20261117T041320.492696Z_controller
+Attempt 02: test exit code 0; log exit code 0
+Testing corrected baseline: Attempt 03
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.7s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.6s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (64.6s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (1.1s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.3s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.8s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.8s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (100.9s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.4s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (3.0s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (201.3s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.6s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.7s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (7.1s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.6s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (66.1s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (20.2s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 36 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 85 verified, 0 failed, 6 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 149 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_03/20261117T042239.150740Z_controller
+Attempt 03: test exit code 0; log exit code 0
+Testing corrected baseline: Attempt 04
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.2s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (1.1s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (63.7s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.7s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.3s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.7s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (99.3s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.0s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.9s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (196.4s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.3s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (26.8s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (6.8s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.5s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (64.6s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (19.6s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 34 verified, 0 failed, 3 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 91 verified, 0 failed, 0 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 147 verified, 0 failed, 22 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_04/20261117T043206.451597Z_controller
+Attempt 04: test exit code 0; log exit code 0
+Testing corrected baseline: Attempt 05
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.8s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.0s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.5s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (62.2s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.7s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (36.9s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.7s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (97.3s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.0s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.9s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (194.4s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (1.9s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.0s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (6.8s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (64.5s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (19.9s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 36 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 88 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 149 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_05/20261117T044121.124504Z_controller
+Attempt 05: test exit code 0; log exit code 0
+Testing corrected baseline: Attempt 06
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 3 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.8s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.3s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.5s) 
+Running single_switch_5_hosts: 3 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.2s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (63.5s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.6s) 
+Running two_switches_4_hosts: 3 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.0s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.6s) 
+Running branching_tree_3_switches_6_hosts: 3 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (98.7s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.0s) 
+Running deep_tree_7_switches_8_hosts: 3 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (3.0s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (198.2s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (1.9s) 
+Running isolated_host_2_switches_4_hosts: 3 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.6s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (6.8s) 
+Running partitioned_4_switches_6_hosts: 3 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.5s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (65.8s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (19.7s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      -        -        -        PASS
+  Forwarding tables: 61 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      -        -        -        PASS
+  Forwarding tables: 36 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 88 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      -        -        -        PASS
+  Forwarding tables: 149 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 19 verified, 0 failed, 12 inconclusive
+partitioned_4_switches_6_hosts 3/3      -        -        -        PASS
+  Forwarding tables: 35 verified, 0 failed, 38 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z/attempt_06/20261117T045028.778112Z_controller
+Attempt 06: test exit code 0; log exit code 0
+Results saved in: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/baseline_corrected_20261117T040349Z
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ 

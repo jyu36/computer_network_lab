@@ -1,0 +1,635 @@
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ cd ~/sdn-project/computer_network_lab
+git pull --ff-only
+
+batch_directory="$PWD/network_validation/results/week_three/runtime_$(date -u +%Y%m%dT%H%M%SZ)"
+
+if sudo install -d -o "$(id -un)" -g "$(id -gn)" "$batch_directory"; then
+  for attempt in 01 02 05; do
+    echo "Testing runtime version: Attempt $attempt"
+
+    sudo /usr/bin/python3 network_validation/run_network_tests.py \
+      --controller "week_three/PASS_attempt_${attempt}/runtime/controller.py" \
+      --suite full \
+      --ryu-manager "$HOME/sdn-project/.venv/bin/ryu-manager" \
+      --results-directory "$batch_directory/attempt_${attempt}" \
+      --verbose \
+      2>&1 | tee "$batch_directory/attempt_${attempt}.terminal.log"
+
+    pipeline_status=("${PIPESTATUS[@]}")
+    result=${pipeline_status[0]}
+    log_result=${pipeline_status[1]}
+
+    echo "Attempt $attempt: test exit code $result; log exit code $log_result" \
+      | tee -a "$batch_directory/batch_summary.txt"
+
+    if [ "$result" -gt 1 ] || [ "$log_result" -ne 0 ]; then
+      echo "Execution or logging error — stopping for investigation."
+      break
+    fi
+  done
+
+  sudo chown -R "$(id -un):$(id -gn)" "$batch_directory"
+  echo "Results saved in: $batch_directory"
+fi
+remote: Enumerating objects: 28, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (10/10), done.
+remote: Total 20 (delta 9), reused 20 (delta 9), pack-reused 0 (from 0)
+Unpacking objects: 100% (20/20), 22.03 KiB | 940.00 KiB/s, done.
+From https://github.com/jyu36/computer_network_lab
+   9caf52f..560995c  main       -> origin/main
+Updating 9caf52f..560995c
+Fast-forward
+ network_validation/results/week_three/movement_20261117T020142Z_reconstructed/movement_summary.json      | 1301 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ network_validation/results/week_three/movement_20261117T020142Z_reconstructed/pasted_terminal_output.log |  551 ++++++++++++++++++++++
+ week_three/PASS_attempt_01/runtime/AGENTS.md                                                             |   23 +
+ week_three/PASS_attempt_01/runtime/controller.py                                                         |  325 +++++++++++++
+ week_three/PASS_attempt_01/runtime/prompt.txt                                                            |  198 ++++++++
+ week_three/PASS_attempt_02/runtime/AGENTS.md                                                             |   23 +
+ week_three/PASS_attempt_02/runtime/controller.py                                                         |  354 ++++++++++++++
+ week_three/PASS_attempt_02/runtime/prompt.txt                                                            |  198 ++++++++
+ week_three/PASS_attempt_05/runtime/AGENTS.md                                                             |   23 +
+ week_three/PASS_attempt_05/runtime/controller.py                                                         |  350 ++++++++++++++
+ week_three/PASS_attempt_05/runtime/prompt.txt                                                            |  198 ++++++++
+ 11 files changed, 3544 insertions(+)
+ create mode 100644 network_validation/results/week_three/movement_20261117T020142Z_reconstructed/movement_summary.json
+ create mode 100644 network_validation/results/week_three/movement_20261117T020142Z_reconstructed/pasted_terminal_output.log
+ create mode 100644 week_three/PASS_attempt_01/runtime/AGENTS.md
+ create mode 100644 week_three/PASS_attempt_01/runtime/controller.py
+ create mode 100644 week_three/PASS_attempt_01/runtime/prompt.txt
+ create mode 100644 week_three/PASS_attempt_02/runtime/AGENTS.md
+ create mode 100644 week_three/PASS_attempt_02/runtime/controller.py
+ create mode 100644 week_three/PASS_attempt_02/runtime/prompt.txt
+ create mode 100644 week_three/PASS_attempt_05/runtime/AGENTS.md
+ create mode 100644 week_three/PASS_attempt_05/runtime/controller.py
+ create mode 100644 week_three/PASS_attempt_05/runtime/prompt.txt
+[sudo] password for jyu164: 
+Testing runtime version: Attempt 01
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 9 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.6s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.7s) 
+RUN single_switch_3_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.3s) 
+RUN single_switch_3_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.2s) 
+RUN single_switch_3_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.5s) 
+RUN single_switch_3_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.0s) 
+RUN single_switch_3_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.4s) 
+RUN single_switch_3_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.0s) 
+Running single_switch_5_hosts: 9 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (63.9s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.9s) 
+RUN single_switch_5_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.7s) 
+RUN single_switch_5_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.2s) 
+RUN single_switch_5_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.0s) 
+RUN single_switch_5_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.4s) 
+RUN single_switch_5_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.7s) 
+RUN single_switch_5_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.3s) 
+Running two_switches_4_hosts: 9 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.5s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.8s) 
+RUN two_switches_4_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.5s) 
+RUN two_switches_4_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN two_switches_4_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.9s) 
+RUN two_switches_4_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.3s) 
+RUN two_switches_4_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.8s) 
+RUN two_switches_4_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.3s) 
+Running branching_tree_3_switches_6_hosts: 9 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (99.6s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (1.2s) 
+RUN branching_tree_3_switches_6_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.2s) 
+RUN branching_tree_3_switches_6_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.4s) 
+RUN branching_tree_3_switches_6_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.3s) 
+RUN branching_tree_3_switches_6_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.9s) 
+RUN branching_tree_3_switches_6_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (13.2s) 
+RUN branching_tree_3_switches_6_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.8s) 
+Running deep_tree_7_switches_8_hosts: 9 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (3.0s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (200.0s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.6s) 
+RUN deep_tree_7_switches_8_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.9s) 
+RUN deep_tree_7_switches_8_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.7s) 
+RUN deep_tree_7_switches_8_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (7.2s) 
+RUN deep_tree_7_switches_8_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (8.7s) 
+RUN deep_tree_7_switches_8_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (13.9s) 
+RUN deep_tree_7_switches_8_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (5.6s) 
+Running isolated_host_2_switches_4_hosts: 9 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.9s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (7.0s) 
+RUN isolated_host_2_switches_4_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.7s) 
+RUN isolated_host_2_switches_4_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN isolated_host_2_switches_4_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.9s) 
+RUN isolated_host_2_switches_4_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.2s) 
+RUN isolated_host_2_switches_4_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (16.7s) 
+RUN isolated_host_2_switches_4_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.2s) 
+Running partitioned_4_switches_6_hosts: 9 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (66.2s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (20.1s) 
+RUN partitioned_4_switches_6_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.3s) 
+RUN partitioned_4_switches_6_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.6s) 
+RUN partitioned_4_switches_6_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.6s) 
+RUN partitioned_4_switches_6_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.9s) 
+RUN partitioned_4_switches_6_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (25.9s) 
+RUN partitioned_4_switches_6_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.9s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 41 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 83 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 58 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 110 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 171 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 41 verified, 0 failed, 15 inconclusive
+partitioned_4_switches_6_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 57 verified, 0 failed, 47 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z/attempt_01/20261117T025720.412017Z_controller
+Attempt 01: test exit code 0; log exit code 0
+Testing runtime version: Attempt 02
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 9 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.8s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.3s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.5s) 
+RUN single_switch_3_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.2s) 
+RUN single_switch_3_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN single_switch_3_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.5s) 
+RUN single_switch_3_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (6.8s) 
+RUN single_switch_3_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.0s) 
+RUN single_switch_3_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (3.9s) 
+Running single_switch_5_hosts: 9 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (63.8s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.6s) 
+RUN single_switch_5_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.7s) 
+RUN single_switch_5_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.2s) 
+RUN single_switch_5_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.0s) 
+RUN single_switch_5_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.4s) 
+RUN single_switch_5_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.6s) 
+RUN single_switch_5_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.3s) 
+Running two_switches_4_hosts: 9 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.9s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.6s) 
+RUN two_switches_4_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.5s) 
+RUN two_switches_4_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN two_switches_4_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.8s) 
+RUN two_switches_4_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.2s) 
+RUN two_switches_4_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.4s) 
+RUN two_switches_4_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.1s) 
+Running branching_tree_3_switches_6_hosts: 9 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (98.4s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (0.9s) 
+RUN branching_tree_3_switches_6_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.0s) 
+RUN branching_tree_3_switches_6_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.4s) 
+RUN branching_tree_3_switches_6_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.3s) 
+RUN branching_tree_3_switches_6_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.8s) 
+RUN branching_tree_3_switches_6_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.9s) 
+RUN branching_tree_3_switches_6_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.7s) 
+Running deep_tree_7_switches_8_hosts: 9 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.9s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (198.3s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (1.9s) 
+RUN deep_tree_7_switches_8_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.9s) 
+RUN deep_tree_7_switches_8_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.8s) 
+RUN deep_tree_7_switches_8_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (7.2s) 
+RUN deep_tree_7_switches_8_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (8.4s) 
+RUN deep_tree_7_switches_8_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (13.9s) 
+RUN deep_tree_7_switches_8_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (5.5s) 
+Running isolated_host_2_switches_4_hosts: 9 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.7s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (6.8s) 
+RUN isolated_host_2_switches_4_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.5s) 
+RUN isolated_host_2_switches_4_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN isolated_host_2_switches_4_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.8s) 
+RUN isolated_host_2_switches_4_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.2s) 
+RUN isolated_host_2_switches_4_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (16.6s) 
+RUN isolated_host_2_switches_4_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.1s) 
+Running partitioned_4_switches_6_hosts: 9 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (65.6s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (19.7s) 
+RUN partitioned_4_switches_6_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.1s) 
+RUN partitioned_4_switches_6_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.4s) 
+RUN partitioned_4_switches_6_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.4s) 
+RUN partitioned_4_switches_6_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.8s) 
+RUN partitioned_4_switches_6_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (25.5s) 
+RUN partitioned_4_switches_6_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.7s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 41 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 83 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 58 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 113 verified, 0 failed, 0 inconclusive
+deep_tree_7_switches_8_hosts  3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 171 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 41 verified, 0 failed, 15 inconclusive
+partitioned_4_switches_6_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 57 verified, 0 failed, 47 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z/attempt_02/20261117T031145.745968Z_controller
+Attempt 02: test exit code 0; log exit code 0
+Testing runtime version: Attempt 05
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running single_switch_3_hosts: 9 cases
+RUN single_switch_3_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.8s) 
+RUN single_switch_3_hosts / known_destination_forwarding
+PASS known_destination_forwarding (18.5s) 
+RUN single_switch_3_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 
+h2 -> h1 h3 
+h3 -> h1 h2 
+*** Results: 0% dropped (6/6 received)
+PASS arp_and_ping_connectivity (0.5s) 
+RUN single_switch_3_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.2s) 
+RUN single_switch_3_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.2s) 
+RUN single_switch_3_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.4s) 
+RUN single_switch_3_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (6.8s) 
+RUN single_switch_3_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.0s) 
+RUN single_switch_3_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (3.8s) 
+Running single_switch_5_hosts: 9 cases
+RUN single_switch_5_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.1s) 
+RUN single_switch_5_hosts / known_destination_forwarding
+PASS known_destination_forwarding (63.6s) 
+RUN single_switch_5_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 
+h2 -> h1 h3 h4 h5 
+h3 -> h1 h2 h4 h5 
+h4 -> h1 h2 h3 h5 
+h5 -> h1 h2 h3 h4 
+*** Results: 0% dropped (20/20 received)
+PASS arp_and_ping_connectivity (0.6s) 
+RUN single_switch_5_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.8s) 
+RUN single_switch_5_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN single_switch_5_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.9s) 
+RUN single_switch_5_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.4s) 
+RUN single_switch_5_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.5s) 
+RUN single_switch_5_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.4s) 
+Running two_switches_4_hosts: 9 cases
+RUN two_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.0s) 
+RUN two_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (37.5s) 
+RUN two_switches_4_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 
+h2 -> h1 h3 h4 
+h3 -> h1 h2 h4 
+h4 -> h1 h2 h3 
+*** Results: 0% dropped (12/12 received)
+PASS arp_and_ping_connectivity (0.6s) 
+RUN two_switches_4_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.4s) 
+RUN two_switches_4_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN two_switches_4_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.7s) 
+RUN two_switches_4_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.1s) 
+RUN two_switches_4_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (12.4s) 
+RUN two_switches_4_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.2s) 
+Running branching_tree_3_switches_6_hosts: 9 cases
+RUN branching_tree_3_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN branching_tree_3_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (98.9s) 
+RUN branching_tree_3_switches_6_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 
+h2 -> h1 h3 h4 h5 h6 
+h3 -> h1 h2 h4 h5 h6 
+h4 -> h1 h2 h3 h5 h6 
+h5 -> h1 h2 h3 h4 h6 
+h6 -> h1 h2 h3 h4 h5 
+*** Results: 0% dropped (30/30 received)
+PASS arp_and_ping_connectivity (0.9s) 
+RUN branching_tree_3_switches_6_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.1s) 
+RUN branching_tree_3_switches_6_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.4s) 
+RUN branching_tree_3_switches_6_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.3s) 
+RUN branching_tree_3_switches_6_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.8s) 
+RUN branching_tree_3_switches_6_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (13.5s) 
+RUN branching_tree_3_switches_6_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.8s) 
+Running deep_tree_7_switches_8_hosts: 9 cases
+RUN deep_tree_7_switches_8_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.9s) 
+RUN deep_tree_7_switches_8_hosts / known_destination_forwarding
+PASS known_destination_forwarding (199.2s) 
+RUN deep_tree_7_switches_8_hosts / arp_and_ping_connectivity
+*** Ping: testing ping reachability
+h1 -> h2 h3 h4 h5 h6 h7 h8 
+h2 -> h1 h3 h4 h5 h6 h7 h8 
+h3 -> h1 h2 h4 h5 h6 h7 h8 
+h4 -> h1 h2 h3 h5 h6 h7 h8 
+h5 -> h1 h2 h3 h4 h6 h7 h8 
+h6 -> h1 h2 h3 h4 h5 h7 h8 
+h7 -> h1 h2 h3 h4 h5 h6 h8 
+h8 -> h1 h2 h3 h4 h5 h6 h7 
+*** Results: 0% dropped (56/56 received)
+PASS arp_and_ping_connectivity (2.0s) 
+RUN deep_tree_7_switches_8_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.9s) 
+RUN deep_tree_7_switches_8_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.7s) 
+RUN deep_tree_7_switches_8_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (7.1s) 
+RUN deep_tree_7_switches_8_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (8.5s) 
+RUN deep_tree_7_switches_8_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (13.8s) 
+RUN deep_tree_7_switches_8_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (5.5s) 
+Running isolated_host_2_switches_4_hosts: 9 cases
+RUN isolated_host_2_switches_4_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (1.9s) 
+RUN isolated_host_2_switches_4_hosts / known_destination_forwarding
+PASS known_destination_forwarding (27.8s) 
+RUN isolated_host_2_switches_4_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (6.8s) 
+RUN isolated_host_2_switches_4_hosts / learned_destination_blocking
+PASS learned_destination_blocking (5.5s) 
+RUN isolated_host_2_switches_4_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.3s) 
+RUN isolated_host_2_switches_4_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (5.7s) 
+RUN isolated_host_2_switches_4_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.1s) 
+RUN isolated_host_2_switches_4_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (16.6s) 
+RUN isolated_host_2_switches_4_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.2s) 
+Running partitioned_4_switches_6_hosts: 9 cases
+RUN partitioned_4_switches_6_hosts / unknown_destination_flooding
+PASS unknown_destination_flooding (2.4s) 
+RUN partitioned_4_switches_6_hosts / known_destination_forwarding
+PASS known_destination_forwarding (65.7s) 
+RUN partitioned_4_switches_6_hosts / arp_and_ping_connectivity
+PASS arp_and_ping_connectivity (19.7s) 
+RUN partitioned_4_switches_6_hosts / learned_destination_blocking
+PASS learned_destination_blocking (6.2s) 
+RUN partitioned_4_switches_6_hosts / unknown_destination_blocking
+PASS unknown_destination_blocking (3.4s) 
+RUN partitioned_4_switches_6_hosts / host_movement_after_cached_forwarding
+PASS host_movement_after_cached_forwarding (6.3s) 
+RUN partitioned_4_switches_6_hosts / host_movement_preserves_blocklist
+PASS host_movement_preserves_blocklist (7.7s) 
+RUN partitioned_4_switches_6_hosts / runtime_block_and_unblock_cached_destination
+PASS runtime_block_and_unblock_cached_destination (25.6s) 
+RUN partitioned_4_switches_6_hosts / invalid_policy_update_preserves_forwarding
+PASS invalid_policy_update_preserves_forwarding (4.9s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+single_switch_3_hosts         3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 41 verified, 0 failed, 0 inconclusive
+single_switch_5_hosts         3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 83 verified, 0 failed, 0 inconclusive
+two_switches_4_hosts          3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 58 verified, 0 failed, 1 inconclusive
+branching_tree_3_switches_6_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 110 verified, 0 failed, 3 inconclusive
+deep_tree_7_switches_8_hosts  3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 171 verified, 0 failed, 20 inconclusive
+isolated_host_2_switches_4_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 41 verified, 0 failed, 15 inconclusive
+partitioned_4_switches_6_hosts 3/3      2/2      2/2      2/2      PASS
+  Forwarding tables: 57 verified, 0 failed, 47 inconclusive
+INCONCLUSIVE tables are not verified; case PASS does not imply all table checks passed. See analysis.json for unsupported/controller branches.
+Evidence: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z/attempt_05/20261117T032600.330012Z_controller
+Attempt 05: test exit code 0; log exit code 0
+Results saved in: /home/jyu164/sdn-project/computer_network_lab/network_validation/results/week_three/runtime_20261117T025716Z
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ 

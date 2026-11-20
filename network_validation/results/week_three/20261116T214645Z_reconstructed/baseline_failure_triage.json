@@ -1,0 +1,406 @@
+{
+  "record_type": "Analysis of user-provided saved failure status/log output",
+  "source_sha256": "56bebb38137e80b9e19ceee37f73106cc0ee2db3c2996460c4bcff31f12ebcf4",
+  "confirmed_findings": [
+    "All six failures abort before the flooding probe at the globally empty learned-table assertion.",
+    "Every learned MAC shown in the latest failure status is outside the configured host inventory.",
+    "Each latest status reports errors=[].",
+    "The code of attempts 03,04,06 learns valid source MACs on Packet-In after ignoring LLDP; the contract does not require ignoring all other non-test source addresses."
+  ],
+  "interpretation": "The globally empty table precondition is overbroad for testing an unknown destination in the presence of background traffic. These records do not demonstrate a flooding defect. Actual flooding assertions were not reached.",
+  "not_yet_established": "Exact origin and EtherType of background frames; switch/interface MAC correlation or startup packet capture is needed.",
+  "next_step": "Correct the unknown-destination precondition to require the target destination to be unlearned, retain packet-delivery assertions and status evidence, then rerun all six unchanged baselines under one corrected procedure. Preserve the original batch. Reapply first-four-passing selection after correction.",
+  "failures": [
+    {
+      "attempt": "03",
+      "configuration": "branching_tree_3_switches_6_hosts",
+      "original_result": {
+        "configuration": "branching_tree_3_switches_6_hosts",
+        "id": "unknown_destination_flooding",
+        "stage": "base",
+        "status": "FAIL",
+        "profile": "full",
+        "max_host_pairs": 0,
+        "pair_seed": 0,
+        "error": "Fresh controller was not empty",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+        "checkpoint": "setup",
+        "failure_code": "assertion",
+        "details": {},
+        "duration_seconds": 0.731,
+        "forwarding_table_checks": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INCONCLUSIVE": 0
+        }
+      },
+      "last_status": {
+        "switches": [
+          1,
+          2,
+          3
+        ],
+        "learned": {
+          "1": {
+            "22:1c:8e:da:f1:7b": 5
+          },
+          "2": {
+            "22:1c:8e:da:f1:7b": 8
+          },
+          "3": {}
+        },
+        "blocked": [],
+        "errors": []
+      },
+      "learned_macs": [
+        "22:1c:8e:da:f1:7b"
+      ],
+      "configured_host_macs": [
+        "00:00:00:00:00:01",
+        "00:00:00:00:00:02",
+        "00:00:00:00:00:03",
+        "00:00:00:00:00:04",
+        "00:00:00:00:00:05",
+        "00:00:00:00:00:06"
+      ],
+      "learned_configured_host_macs": []
+    },
+    {
+      "attempt": "03",
+      "configuration": "deep_tree_7_switches_8_hosts",
+      "original_result": {
+        "configuration": "deep_tree_7_switches_8_hosts",
+        "id": "unknown_destination_flooding",
+        "stage": "base",
+        "status": "FAIL",
+        "profile": "full",
+        "max_host_pairs": 0,
+        "pair_seed": 0,
+        "error": "Fresh controller was not empty",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+        "checkpoint": "setup",
+        "failure_code": "assertion",
+        "details": {},
+        "duration_seconds": 1.069,
+        "forwarding_table_checks": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INCONCLUSIVE": 0
+        }
+      },
+      "last_status": {
+        "switches": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "learned": {
+          "1": {
+            "62:5d:4e:9f:8a:36": 8
+          },
+          "2": {
+            "62:5d:4e:9f:8a:36": 10
+          },
+          "3": {},
+          "4": {
+            "96:6a:d4:6e:20:e1": 9,
+            "62:5d:4e:9f:8a:36": 9
+          },
+          "5": {
+            "62:5d:4e:9f:8a:36": 9
+          },
+          "6": {},
+          "7": {}
+        },
+        "blocked": [],
+        "errors": []
+      },
+      "learned_macs": [
+        "62:5d:4e:9f:8a:36",
+        "96:6a:d4:6e:20:e1"
+      ],
+      "configured_host_macs": [
+        "00:00:00:00:00:01",
+        "00:00:00:00:00:02",
+        "00:00:00:00:00:03",
+        "00:00:00:00:00:04",
+        "00:00:00:00:00:05",
+        "00:00:00:00:00:06",
+        "00:00:00:00:00:07",
+        "00:00:00:00:00:08"
+      ],
+      "learned_configured_host_macs": []
+    },
+    {
+      "attempt": "04",
+      "configuration": "deep_tree_7_switches_8_hosts",
+      "original_result": {
+        "configuration": "deep_tree_7_switches_8_hosts",
+        "id": "unknown_destination_flooding",
+        "stage": "base",
+        "status": "FAIL",
+        "profile": "full",
+        "max_host_pairs": 0,
+        "pair_seed": 0,
+        "error": "Fresh controller was not empty",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+        "checkpoint": "setup",
+        "failure_code": "assertion",
+        "details": {},
+        "duration_seconds": 0.998,
+        "forwarding_table_checks": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INCONCLUSIVE": 0
+        }
+      },
+      "last_status": {
+        "switches": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "learned": {
+          "1": {
+            "8e:5e:22:4b:1b:5a": 4,
+            "32:a9:6a:a5:59:f4": 4
+          },
+          "2": {
+            "8e:5e:22:4b:1b:5a": 3
+          },
+          "3": {
+            "8e:5e:22:4b:1b:5a": 10,
+            "32:a9:6a:a5:59:f4": 10
+          },
+          "4": {},
+          "5": {},
+          "6": {
+            "32:a9:6a:a5:59:f4": 9
+          },
+          "7": {
+            "32:a9:6a:a5:59:f4": 9
+          }
+        },
+        "blocked": [],
+        "errors": []
+      },
+      "learned_macs": [
+        "32:a9:6a:a5:59:f4",
+        "8e:5e:22:4b:1b:5a"
+      ],
+      "configured_host_macs": [
+        "00:00:00:00:00:01",
+        "00:00:00:00:00:02",
+        "00:00:00:00:00:03",
+        "00:00:00:00:00:04",
+        "00:00:00:00:00:05",
+        "00:00:00:00:00:06",
+        "00:00:00:00:00:07",
+        "00:00:00:00:00:08"
+      ],
+      "learned_configured_host_macs": []
+    },
+    {
+      "attempt": "04",
+      "configuration": "partitioned_4_switches_6_hosts",
+      "original_result": {
+        "configuration": "partitioned_4_switches_6_hosts",
+        "id": "unknown_destination_flooding",
+        "stage": "base",
+        "status": "FAIL",
+        "profile": "full",
+        "max_host_pairs": 0,
+        "pair_seed": 0,
+        "error": "Fresh controller was not empty",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+        "checkpoint": "setup",
+        "failure_code": "assertion",
+        "details": {},
+        "duration_seconds": 0.817,
+        "forwarding_table_checks": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INCONCLUSIVE": 0
+        }
+      },
+      "last_status": {
+        "switches": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "learned": {
+          "1": {},
+          "2": {
+            "8a:b0:13:aa:25:56": 6
+          },
+          "3": {
+            "06:bf:d6:d9:bb:1e": 5
+          },
+          "4": {
+            "fe:30:88:dc:e2:dc": 6
+          }
+        },
+        "blocked": [],
+        "errors": []
+      },
+      "learned_macs": [
+        "06:bf:d6:d9:bb:1e",
+        "8a:b0:13:aa:25:56",
+        "fe:30:88:dc:e2:dc"
+      ],
+      "configured_host_macs": [
+        "00:00:00:00:00:01",
+        "00:00:00:00:00:02",
+        "00:00:00:00:00:03",
+        "00:00:00:00:00:04",
+        "00:00:00:00:00:05",
+        "00:00:00:00:00:06"
+      ],
+      "learned_configured_host_macs": []
+    },
+    {
+      "attempt": "06",
+      "configuration": "deep_tree_7_switches_8_hosts",
+      "original_result": {
+        "configuration": "deep_tree_7_switches_8_hosts",
+        "id": "unknown_destination_flooding",
+        "stage": "base",
+        "status": "FAIL",
+        "profile": "full",
+        "max_host_pairs": 0,
+        "pair_seed": 0,
+        "error": "Fresh controller was not empty",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+        "checkpoint": "setup",
+        "failure_code": "assertion",
+        "details": {},
+        "duration_seconds": 1.022,
+        "forwarding_table_checks": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INCONCLUSIVE": 0
+        }
+      },
+      "last_status": {
+        "switches": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "learned": {
+          "1": {
+            "ea:39:86:a8:48:88": 8,
+            "fe:d7:0e:57:63:11": 4
+          },
+          "2": {
+            "ea:39:86:a8:48:88": 10
+          },
+          "3": {
+            "ea:39:86:a8:48:88": 3,
+            "fe:d7:0e:57:63:11": 10
+          },
+          "4": {
+            "ea:39:86:a8:48:88": 9
+          },
+          "5": {
+            "da:b8:b3:00:da:8b": 9,
+            "ea:39:86:a8:48:88": 9
+          },
+          "6": {
+            "fe:d7:0e:57:63:11": 9
+          },
+          "7": {
+            "fe:d7:0e:57:63:11": 9,
+            "ea:39:86:a8:48:88": 9
+          }
+        },
+        "blocked": [],
+        "errors": []
+      },
+      "learned_macs": [
+        "da:b8:b3:00:da:8b",
+        "ea:39:86:a8:48:88",
+        "fe:d7:0e:57:63:11"
+      ],
+      "configured_host_macs": [
+        "00:00:00:00:00:01",
+        "00:00:00:00:00:02",
+        "00:00:00:00:00:03",
+        "00:00:00:00:00:04",
+        "00:00:00:00:00:05",
+        "00:00:00:00:00:06",
+        "00:00:00:00:00:07",
+        "00:00:00:00:00:08"
+      ],
+      "learned_configured_host_macs": []
+    },
+    {
+      "attempt": "06",
+      "configuration": "partitioned_4_switches_6_hosts",
+      "original_result": {
+        "configuration": "partitioned_4_switches_6_hosts",
+        "id": "unknown_destination_flooding",
+        "stage": "base",
+        "status": "FAIL",
+        "profile": "full",
+        "max_host_pairs": 0,
+        "pair_seed": 0,
+        "error": "Fresh controller was not empty",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/run_network_tests.py\", line 287, in main\n    test_environment.run_test_scenario()\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/Helpers/environment.py\", line 595, in run_test_scenario\n    SCENARIOS[self.test_case[\"scenario\"]](self)\n  File \"/home/jyu164/sdn-project/computer_network_lab/network_validation/cases/base.py\", line 7, in test_unknown_destination_flooding\n    assert all(\nAssertionError: Fresh controller was not empty\n",
+        "checkpoint": "setup",
+        "failure_code": "assertion",
+        "details": {},
+        "duration_seconds": 0.771,
+        "forwarding_table_checks": {
+          "PASS": 0,
+          "FAIL": 0,
+          "INCONCLUSIVE": 0
+        }
+      },
+      "last_status": {
+        "switches": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "learned": {
+          "1": {},
+          "2": {
+            "2a:a5:02:bc:25:e3": 6
+          },
+          "3": {},
+          "4": {}
+        },
+        "blocked": [],
+        "errors": []
+      },
+      "learned_macs": [
+        "2a:a5:02:bc:25:e3"
+      ],
+      "configured_host_macs": [
+        "00:00:00:00:00:01",
+        "00:00:00:00:00:02",
+        "00:00:00:00:00:03",
+        "00:00:00:00:00:04",
+        "00:00:00:00:00:05",
+        "00:00:00:00:00:06"
+      ],
+      "learned_configured_host_macs": []
+    }
+  ]
+}
