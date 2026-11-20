@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run frozen baseline traces on both originals and proposals, then compare."""
+"""Run frozen baseline traces on both original and simplified controllers, then compare."""
 
 import argparse
 import datetime
@@ -13,7 +13,7 @@ import sys
 PROJECT_DIRECTORY = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_DIRECTORY))
 
-from week_four.Helpers.preservation import build_plan, compare_batch
+from controller_simplification.Helpers.compare_results import build_plan, compare_batch, prepare_component_recheck
 
 
 def main():
@@ -21,8 +21,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ryu-manager', default=str(Path.home() / 'sdn-project/.venv/bin/ryu-manager'))
     parser.add_argument('--plan', action='store_true', help='Validate hashes and show counts without starting networks')
+    parser.add_argument('--recheck-from', type=Path,
+                        help='Reuse verified unchanged passing evidence from this original batch; rerun only the corrected partition case')
     arguments = parser.parse_args()
     plan = build_plan(PROJECT_DIRECTORY)
+    if arguments.recheck_from:
+        plan = prepare_component_recheck(plan, arguments.recheck_from, PROJECT_DIRECTORY)
     if arguments.plan:
         print(json.dumps(plan, indent=2))
         return 0
@@ -32,16 +36,17 @@ def main():
     if subprocess.run(['sudo', '-v']).returncode:
         return 2
     timestamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
-    batch_directory = PROJECT_DIRECTORY / 'week_four/evaluation_results' / ('preservation_' + timestamp)
+    batch_directory = PROJECT_DIRECTORY / 'controller_simplification/test_results' / ('comparison_' + timestamp)
     batch_directory.mkdir(parents=True)
-    shutil.copytree(PROJECT_DIRECTORY / 'week_four/held_out', batch_directory / 'evaluation_definition')
+    shutil.copytree(PROJECT_DIRECTORY / 'controller_simplification/comparison_tests', batch_directory / 'test_definitions')
     (batch_directory / 'run_plan.json').write_text(json.dumps(plan, indent=2) + '\n')
     print('%d runner launches; %d case executions; sequential, fresh network per case.'
           % (plan['runner_launches'], plan['case_executions']), flush=True)
     executions = []
     execution_error = False
+    execution_runs = plan.get('execution_runs', plan['runs'])
     try:
-        for number, run in enumerate(plan['runs'], 1):
+        for number, run in enumerate(execution_runs, 1):
             # Recheck frozen inputs before every launch, including long batches.
             build_plan(PROJECT_DIRECTORY)
             output_directory = batch_directory / run['source'] / run['version'] / run['configuration']
@@ -54,7 +59,9 @@ def main():
                 '--case-file', str(PROJECT_DIRECTORY / run['case_file']),
                 '--ryu-manager', str(ryu_manager), '--results-directory', str(output_directory), '--verbose',
             ]
-            print('\n[%d/%d] %s / %s / %s' % (number, len(plan['runs']), run['source'], run['version'], run['configuration']), flush=True)
+            if arguments.recheck_from:
+                command.extend(['--case-id', run['case_ids'][0]])
+            print('\n[%d/%d] %s / %s / %s' % (number, len(execution_runs), run['source'], run['version'], run['configuration']), flush=True)
             with (output_directory / 'terminal.log').open('w') as log:
                 with subprocess.Popen(command, cwd=PROJECT_DIRECTORY, stdout=subprocess.PIPE,
                                       stderr=subprocess.STDOUT, text=True, errors='replace') as process:

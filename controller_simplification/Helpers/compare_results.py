@@ -6,38 +6,41 @@ from pathlib import Path
 
 
 PACKET_FIELDS = ('source', 'destination', 'receiver', 'sent', 'received', 'allowed')
+RECHECK_CONFIGURATION = 'held_out_two_components_sparse_ports'
+RECHECK_CASE = 'preservation_repeated_component_delivery'
 
 
 def build_plan(project_directory):
     """Check frozen hashes and enumerate the matched controller/fixture runs."""
     project_directory = Path(project_directory)
-    experiment = json.loads((project_directory / 'week_four/experiment_manifest.json').read_text())
-    held_out_path = project_directory / experiment['held_out_manifest']
-    if hashlib.sha256(held_out_path.read_bytes()).hexdigest() != experiment['held_out_manifest_sha256']:
-        raise ValueError('Frozen held-out manifest changed')
-    held_out = json.loads(held_out_path.read_text())
-    for relative_path, expected_hash in held_out['asset_sha256'].items():
+    experiment = json.loads((project_directory / 'controller_simplification/experiment_settings.json').read_text())
+    test_settings_path = project_directory / experiment['comparison_test_settings']
+    if hashlib.sha256(test_settings_path.read_bytes()).hexdigest() != experiment['comparison_test_settings_sha256']:
+        raise ValueError('Comparison test settings changed')
+    test_settings = json.loads(test_settings_path.read_text())
+    for relative_path, expected_hash in test_settings['asset_sha256'].items():
         if hashlib.sha256((project_directory / relative_path).read_bytes()).hexdigest() != expected_hash:
             raise ValueError('Frozen evaluation asset changed: ' + relative_path)
     runs = []
-    for label, source in experiment['source_mapping_researcher_only'].items():
+    for label, source in experiment['controllers'].items():
         for version, path_key, hash_key in (
-            ('original', 'original_snapshot', 'original_sha256'),
-            ('simplified', 'proposal_snapshot', 'proposal_sha256'),
+            ('original', 'original_controller', 'original_sha256'),
+            ('simplified', 'simplified_controller', 'simplified_sha256'),
         ):
             controller = source[path_key]
             expected_hash = source[hash_key]
             if hashlib.sha256((project_directory / controller).read_bytes()).hexdigest() != expected_hash:
                 raise ValueError('Frozen controller changed: ' + controller)
-            for fixture in held_out['experiments']:
+            for fixture in test_settings['experiments']:
                 runs.append(dict(fixture, source=label, version=version,
                                  controller=controller, controller_sha256=expected_hash,
-                                 configuration_file=held_out['configuration_file']))
+                                 previous_result_label=source.get('previous_result_label', label),
+                                 configuration_file=test_settings['configuration_file']))
     case_count = sum(len(run['case_ids']) for run in runs)
-    if (not runs or len(runs) != held_out['runner_launches']
-            or case_count != held_out['case_executions']):
+    if (not runs or len(runs) != test_settings['runner_launches']
+            or case_count != test_settings['case_executions']):
         raise ValueError('Evaluation run/case counts differ from frozen definition')
-    return {'runs': runs, 'definition': held_out,
+    return {'runs': runs, 'definition': test_settings,
             'runner_launches': len(runs), 'case_executions': case_count}
 
 
@@ -92,15 +95,82 @@ def compare_case(original, simplified):
     return 'MATCH', 'Both passed and endpoint packet observations match'
 
 
+def prepare_component_recheck(plan, previous_batch, project_directory):
+    """Reuse unchanged passing cases; rerun only the corrected partition case.
+
+    Verify old frozen definitions and controller snapshots. No evidence from a
+    changed case is reused, and any other definition change prevents reuse.
+    """
+    previous_batch, project_directory = Path(previous_batch).resolve(), Path(project_directory)
+    previous_definition = previous_batch / 'test_definitions'
+    if not previous_definition.exists():
+        previous_definition = previous_batch / 'evaluation_definition'
+    settings_path = previous_definition / 'settings.json'
+    if not settings_path.exists():
+        settings_path = previous_definition / 'manifest.json'
+    old_manifest = json.loads(settings_path.read_text())
+    for relative_path, expected_hash in old_manifest['asset_sha256'].items():
+        archived = previous_definition / Path(relative_path).name
+        if hashlib.sha256(archived.read_bytes()).hexdigest() != expected_hash:
+            raise ValueError('Previous frozen evaluation asset hash mismatch')
+    definition = plan['definition']
+    previous_fixtures = {fixture['configuration']: fixture for fixture in old_manifest['experiments']}
+    if {name: fixture['case_ids'] for name, fixture in previous_fixtures.items()} != {
+            fixture['configuration']: fixture['case_ids'] for fixture in definition['experiments']}:
+        raise ValueError('Previous fixture/case selection differs; run a full evaluation')
+    config_name = Path(definition['configuration_file']).name
+    if (previous_definition / config_name).read_bytes() != (project_directory / definition['configuration_file']).read_bytes():
+        raise ValueError('Network definitions changed; cannot reuse previous results')
+    for fixture in definition['experiments']:
+        current = json.loads((project_directory / fixture['case_file']).read_text())
+        old_case_file = previous_fixtures[fixture['configuration']]['case_file']
+        previous = json.loads((previous_definition / Path(old_case_file).name).read_text())
+        if len(current) != len(previous):
+            raise ValueError('Case definitions changed; cannot reuse previous results')
+        for old_case, new_case in zip(previous, current):
+            if (fixture['configuration'], new_case['id']) != (RECHECK_CONFIGURATION, RECHECK_CASE):
+                if old_case != new_case:
+                    raise ValueError('An unchanged case definition differs; cannot reuse')
+            elif old_case['id'] != new_case['id']:
+                raise ValueError('Corrected case identity differs')
+    execution_runs = []
+    for run in plan['runs']:
+        old_evidence = load_run_evidence(find_run_directory(previous_batch, run), run)
+        for case_id, evidence in old_evidence.items():
+            if (run['configuration'], case_id) != (RECHECK_CONFIGURATION, RECHECK_CASE):
+                if evidence['status'] != 'PASS' or not evidence['packets']:
+                    raise ValueError('An unchanged case lacks passing packet evidence; cannot reuse')
+        if run['configuration'] == RECHECK_CONFIGURATION:
+            execution_runs.append(dict(run, case_ids=[RECHECK_CASE]))
+    if len(execution_runs) != 4:
+        raise ValueError('Expected exactly four corrected-case evaluations')
+    return dict(plan, previous_batch=str(previous_batch), execution_runs=execution_runs,
+                runner_launches=4, case_executions=4, reused_case_executions=20)
+
+
+def find_run_directory(batch_directory, run):
+    """Read new descriptive folder names or the earlier source_a/source_b names."""
+    directory = Path(batch_directory) / run['source'] / run['version'] / run['configuration']
+    if directory.exists():
+        return directory
+    return Path(batch_directory) / run.get('previous_result_label', run['source']) / run['version'] / run['configuration']
+
+
 def compare_batch(batch_directory, plan):
     """Build a paired report; missing or failed evidence cannot imply acceptance."""
     batch_directory = Path(batch_directory)
     loaded = {}
     for run in plan['runs']:
         key = (run['source'], run['version'], run['configuration'])
-        directory = batch_directory.joinpath(*key)
         try:
-            loaded[key] = (load_run_evidence(directory, run), None)
+            previous_batch = plan.get('previous_batch')
+            directory = find_run_directory(previous_batch, run) if previous_batch else batch_directory.joinpath(*key)
+            evidence = load_run_evidence(directory, run)
+            if previous_batch and run['configuration'] == RECHECK_CONFIGURATION:
+                replacement = load_run_evidence(
+                    batch_directory.joinpath(*key), dict(run, case_ids=[RECHECK_CASE]))
+                evidence[RECHECK_CASE] = replacement[RECHECK_CASE]
+            loaded[key] = (evidence, None)
         except (OSError, ValueError, KeyError, TypeError) as error:
             loaded[key] = (None, str(error))
     comparisons = []
@@ -131,12 +201,13 @@ def compare_batch(batch_directory, plan):
     }
     return {
         'acceptance': acceptance, 'comparisons': comparisons,
+        'reused_from_previous_batch': plan.get('previous_batch'),
         'counts': {status: sum(row['status'] == status for row in comparisons)
                    for status in ('MATCH', 'REJECT', 'INCONCLUSIVE')},
         'limitations': [
             'Matching concrete traces is test evidence, not proof of general equivalence.',
             'Inconclusive forwarding-table analyses remain unverified.',
-            'Evaluation definitions were made after proposals were frozen; this is exploratory.',
+            'Comparison tests were defined after simplified versions were saved; this is exploratory.',
             'Evaluation duration does not measure AI implementation effort.',
         ],
     }

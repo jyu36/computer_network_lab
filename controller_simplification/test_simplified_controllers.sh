@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Evaluate the two frozen proposals. This is the baseline acceptance screen;
-# held-out behavior comparisons are still required before accepting a cleanup.
+# Evaluate the two saved simplified controllers. This is the baseline acceptance screen;
+# additional behavior comparisons are still required before accepting a cleanup.
 set -uo pipefail
 
 project_directory="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)" || exit 2
@@ -11,28 +11,28 @@ if [ ! -x "$ryu_manager" ]; then
   exit 2
 fi
 
-# Refuse evaluation if the proposals changed after the researcher froze them.
+# Refuse evaluation if the simplified controllers changed after the researcher froze them.
 /usr/bin/python3 - <<'PY' || exit 2
 import hashlib
 import json
 from pathlib import Path
 
-manifest = json.loads(Path('week_four/experiment_manifest.json').read_text())
-for label, record in manifest['source_mapping_researcher_only'].items():
-    source = Path(record['proposal_snapshot'])
-    if hashlib.sha256(source.read_bytes()).hexdigest() != record['proposal_sha256']:
-        raise SystemExit('Frozen proposal hash mismatch: ' + label)
+manifest = json.loads(Path('controller_simplification/experiment_settings.json').read_text())
+for label, record in manifest['controllers'].items():
+    source = Path(record['simplified_controller'])
+    if hashlib.sha256(source.read_bytes()).hexdigest() != record['simplified_sha256']:
+        raise SystemExit('Saved simplified controller hash mismatch: ' + label)
 PY
 
 sudo -v || exit 2
-batch_directory="$project_directory/week_four/evaluation_results/baseline_$(date -u +%Y%m%dT%H%M%SZ)"
+batch_directory="$project_directory/controller_simplification/test_results/baseline_$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$batch_directory" || exit 2
 overall_status=0
 
-for source_label in source_a source_b; do
+for source_label in ryu_reference attempt_01; do
   echo "Evaluating simplified baseline: $source_label"
   sudo /usr/bin/python3 network_validation/run_network_tests.py \
-    --controller "week_four/proposals/$source_label/controller.py" \
+    --controller "controller_simplification/controllers/$source_label/simplified.py" \
     --suite base \
     --ryu-manager "$ryu_manager" \
     --results-directory "$batch_directory/$source_label" \

@@ -1,0 +1,78 @@
+{
+  "phase": "First preservation run exposed partition-trace oracle error; raw outcome preserved; corrected affected-case evaluation pending.",
+  "intended_model_user_reported": "GPT-6.1 Sol",
+  "intended_reasoning_setting": "Medium",
+  "protocol": {
+    "test_feedback_corrections": 0,
+    "fresh_isolated_context_per_task": true,
+    "allowed_local_checks": "Python standard-library AST syntax check",
+    "visible_development_material": "Baseline contract and scenario descriptions in identical prompts; no executable Mininet suite in task workspaces",
+    "resource_budget": "Match settings across both tasks. Exact hard time/token budget has not yet been set; choose and record it before starting.",
+    "simplification_attempts_per_controller": 1,
+    "evaluation_isolation": "Keep comparison_tests and test_results outside AI workspaces."
+  },
+  "effort_recording": "Record observed times and actual available usage outside agent folders. Leave unavailable metrics blank and explain in notes. VM evaluation duration is separate from AI effort.",
+  "prompt_sha256": "fbaba5f04d9d0234a064bcf245ca87c644406bec489841b7baf01550cdfc6c4d",
+  "preservation_harness_error_record": "controller_simplification/test_results/preservation_20261120T204059.407239Z_reconstructed/preservation_summary.json",
+  "controllers": {
+    "ryu_reference": {
+      "source_file": "controllers/ryu_reference_baseline.py",
+      "original_controller": "controller_simplification/controllers/ryu_reference/original.py",
+      "original_sha256": "22909a9959b330792f0e47f3c241bb3ac05e27819c27c80816b803f0b9efb89c",
+      "ai_workspace": "controller_simplification/ai_workspaces/ryu_reference",
+      "supplied_input_sha256": "58b0c5a01fb64db613fd0d3fb5f3a9e62893fa2ca4ba0080497938718f7a6f85",
+      "presentation_changes": "Only descriptive docstrings standardized to remove researcher origin labels; license notices and executable AST unchanged. Existing code structure and copyright may reveal origin.",
+      "simplified_controller": "controller_simplification/controllers/ryu_reference/simplified.py",
+      "simplified_sha256": "b651176c307b252cea2ddab60c0b9cadaef71609ed02a36ed927a859f6405ff3",
+      "simplified_physical_lines": 273,
+      "local_precheck": {
+        "syntax": "PASS",
+        "original_and_prompt_integrity": "PASS",
+        "real_ryu_ovs_test": "NOT_RUN",
+        "integration_acceptance": "PENDING",
+        "handler_checks": "13 existing reference handler checks passed against proposal using framework stand-ins."
+      },
+      "structural_change": "Synchronization object now owns barrier startup, acknowledgments and terminal-result selection.",
+      "baseline_integration": {
+        "status": "PASS",
+        "passed": 21,
+        "total": 21,
+        "record": "controller_simplification/test_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json",
+        "evidence_source": "user-supplied Ubuntu terminal output",
+        "comparison_acceptance": "PENDING"
+      },
+      "previous_result_label": "source_a"
+    },
+    "attempt_01": {
+      "source_file": "week_three/PASS_attempt_01/controller.py",
+      "original_controller": "controller_simplification/controllers/attempt_01/original.py",
+      "original_sha256": "6ebcd9bd02d623d7df5b3886e78619c3be92de51bfaf069c5bc69a755c8605ca",
+      "ai_workspace": "controller_simplification/ai_workspaces/attempt_01",
+      "supplied_input_sha256": "1c3a41524b9d11d380824cc52f688bbc7ff7c96c99b514c6e9775386e310c928",
+      "presentation_changes": "Only descriptive docstrings standardized to remove researcher origin labels; license notices and executable AST unchanged. Existing code structure and copyright may reveal origin.",
+      "simplified_controller": "controller_simplification/controllers/attempt_01/simplified.py",
+      "simplified_sha256": "68241c667ed69e8908db8612b4d857af356502b0f3eacafdfa93e370d417093c",
+      "simplified_physical_lines": 219,
+      "local_precheck": {
+        "syntax": "PASS",
+        "original_and_prompt_integrity": "PASS",
+        "real_ryu_ovs_test": "NOT_RUN",
+        "integration_acceptance": "PENDING",
+        "differential_handler_exercise": "Original and proposal produced matching fake-datapath messages/state across exercised learning, buffering, malformed input, LLDP, synchronization, timeout, error and disconnect scenarios."
+      },
+      "structural_change": "Shared _install_flow helper replaces duplicate table-miss and learned-flow construction.",
+      "baseline_integration": {
+        "status": "PASS",
+        "passed": 21,
+        "total": 21,
+        "record": "controller_simplification/test_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json",
+        "evidence_source": "user-supplied Ubuntu terminal output",
+        "comparison_acceptance": "PENDING"
+      },
+      "previous_result_label": "source_b"
+    }
+  },
+  "comparison_test_settings": "controller_simplification/comparison_tests/settings.json",
+  "comparison_test_settings_sha256": "1e703f8d11c55a70abbab5392d689b16a850112ead173a0df6131780d86d5944",
+  "folder_layout_note": "Folders renamed for readability after AI tasks finished. Controller bytes and historical results are unchanged. Older Ubuntu batches may still use week_four and source_a/source_b."
+}

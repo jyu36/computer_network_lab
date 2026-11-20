@@ -1,0 +1,54 @@
+{
+  "purpose": "Compare original and simplified controllers using the same packet sequences",
+  "design_timing": "Exploratory definitions made after simplification proposals were frozen. Revision 2 corrects an oracle error exposed by the first preservation run; this is no longer a fully unseen acceptance check.",
+  "configuration_file": "controller_simplification/comparison_tests/network_configurations.json",
+  "experiments": [
+    {
+      "configuration": "held_out_chain_sparse_ports",
+      "case_file": "controller_simplification/comparison_tests/chain_test_cases.json",
+      "case_ids": [
+        "preservation_cold_destination",
+        "preservation_interleaved_cached_paths",
+        "preservation_repeated_component_delivery"
+      ]
+    },
+    {
+      "configuration": "held_out_two_components_sparse_ports",
+      "case_file": "controller_simplification/comparison_tests/partition_test_cases.json",
+      "case_ids": [
+        "preservation_cold_destination",
+        "preservation_interleaved_cached_paths",
+        "preservation_repeated_component_delivery"
+      ]
+    }
+  ],
+  "asset_sha256": {
+    "controller_simplification/comparison_tests/network_configurations.json": "a4b6c6bc60e7e5b8ec4bef66f520abf84a396ab6c2dbf00fd6e1c60435e07d16",
+    "controller_simplification/comparison_tests/chain_test_cases.json": "31bea70dbccc1deff6ab2a1671362c4899d66e0cc52e1327f4de9aaa3b6c7441",
+    "controller_simplification/comparison_tests/partition_test_cases.json": "5e9534bf2ee24f70e307ca3f5dd0afe3bbd34862fff293964ea404de2417894c"
+  },
+  "controller_versions": [
+    "source_a/original",
+    "source_a/simplified",
+    "source_b/original",
+    "source_b/simplified"
+  ],
+  "runner_launches": 8,
+  "case_executions": 24,
+  "acceptance": "Both variants must pass every selected case and have matching ordered tagged-packet endpoint observations. Missing/error evidence is inconclusive; inconclusive forwarding-table analyses are recorded, not counted as verified.",
+  "scope": "Concrete ARP/IPv4 ICMP sequences in two fixed loop-free fixtures. No movement, policy updates, arbitrary packet equivalence, performance equivalence or formal proof.",
+  "isolation": "Do not provide this directory, runner or its output to simplification or maintenance agents. Folder instructions provide workflow isolation, not an OS access boundary.",
+  "revision": 2,
+  "correction_history": [
+    {
+      "revision": 2,
+      "previous_case_file_sha256": "7610a4200214edf2345c06c7b39eec0565bd372157de3a02261fc7901f358f0d",
+      "affected_configuration": "held_out_two_components_sparse_ports",
+      "affected_case": "preservation_repeated_component_delivery",
+      "reason": "Corrected mistaken no-copies assertion for unknown MACs in another physical component. Local flooding is required; destination isolation remains required.",
+      "previous_run_record": "controller_simplification/test_results/preservation_20261120T204059.407239Z_reconstructed/preservation_summary.json",
+      "controller_changes": false
+    }
+  ],
+  "layout_note": "File paths renamed for readability. Existing configuration/case IDs remain stable for matching historical evidence."
+}

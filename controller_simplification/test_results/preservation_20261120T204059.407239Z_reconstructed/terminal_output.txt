@@ -1,0 +1,160 @@
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ cd ~/sdn-project/computer_network_lab
+git pull
+
+/usr/bin/python3 week_four/evaluate_preservation.py \
+  --ryu-manager "$HOME/sdn-project/.venv/bin/ryu-manager"
+remote: Enumerating objects: 24, done.
+remote: Counting objects: 100% (24/24), done.
+remote: Compressing objects: 100% (13/13), done.
+remote: Total 19 (delta 5), reused 19 (delta 5), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 12.44 KiB | 471.00 KiB/s, done.
+From https://github.com/jyu36/computer_network_lab
+   f46983d..b5f95c2  main       -> origin/main
+Updating f46983d..b5f95c2
+Fast-forward
+ network_validation/test_preservation_comparison.py                                         | 127 ++++++++++++++++++++++
+ week_four/Helpers/preservation.py                                                          | 142 ++++++++++++++++++++++++
+ week_four/effort_log.csv                                                                   |   4 +-
+ week_four/evaluate_preservation.py                                                         |  89 +++++++++++++++
+ week_four/evaluation_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json | 393 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ week_four/evaluation_results/baseline_20261120T044049Z_reconstructed/terminal_output.txt   | 253 ++++++++++++++++++++++++++++++++++++++++++
+ week_four/experiment_manifest.json                                                         |  26 ++++-
+ week_four/held_out/held_out_chain_sparse_ports_cases.json                                  | 165 ++++++++++++++++++++++++++++
+ week_four/held_out/held_out_two_components_sparse_ports_cases.json                         | 165 ++++++++++++++++++++++++++++
+ week_four/held_out/manifest.json                                                           |  41 +++++++
+ week_four/held_out/network_configurations.json                                             |  83 ++++++++++++++
+ 11 files changed, 1482 insertions(+), 6 deletions(-)
+ create mode 100644 network_validation/test_preservation_comparison.py
+ create mode 100644 week_four/Helpers/preservation.py
+ create mode 100644 week_four/evaluate_preservation.py
+ create mode 100644 week_four/evaluation_results/baseline_20261120T044049Z_reconstructed/baseline_summary.json
+ create mode 100644 week_four/evaluation_results/baseline_20261120T044049Z_reconstructed/terminal_output.txt
+ create mode 100644 week_four/held_out/held_out_chain_sparse_ports_cases.json
+ create mode 100644 week_four/held_out/held_out_two_components_sparse_ports_cases.json
+ create mode 100644 week_four/held_out/manifest.json
+ create mode 100644 week_four/held_out/network_configurations.json
+[sudo] password for jyu164: 
+8 runner launches; 24 case executions; sequential, fresh network per case.
+
+[1/8] source_a / original / held_out_chain_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_chain_sparse_ports: 3 cases
+RUN held_out_chain_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.3s) 
+RUN held_out_chain_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (13.7s) 
+RUN held_out_chain_sparse_ports / preservation_repeated_component_delivery
+PASS preservation_repeated_component_delivery (13.8s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_chain_sparse_ports   3/3      -        -        -        PASS
+  Forwarding tables: 16 verified, 0 failed, 0 inconclusive
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/original/held_out_chain_sparse_ports/20261120T204059.495644Z_controller
+
+[2/8] source_a / original / held_out_two_components_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_two_components_sparse_ports: 3 cases
+RUN held_out_two_components_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.3s) 
+RUN held_out_two_components_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (13.9s) 
+RUN held_out_two_components_sparse_ports / preservation_repeated_component_delivery
+FAIL preservation_repeated_component_delivery (3.2s) h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_two_components_sparse_ports 2/3      -        -        -        1 FAIL, 2 PASS
+  Forwarding tables: 9 verified, 0 failed, 0 inconclusive
+held_out_two_components_sparse_ports / preservation_repeated_component_delivery: FAIL — h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/original/held_out_two_components_sparse_ports/20261120T204129.670062Z_controller
+
+[3/8] source_a / simplified / held_out_chain_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_chain_sparse_ports: 3 cases
+RUN held_out_chain_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.1s) 
+RUN held_out_chain_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (14.0s) 
+RUN held_out_chain_sparse_ports / preservation_repeated_component_delivery
+PASS preservation_repeated_component_delivery (13.8s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_chain_sparse_ports   3/3      -        -        -        PASS
+  Forwarding tables: 16 verified, 0 failed, 0 inconclusive
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/simplified/held_out_chain_sparse_ports/20261120T204149.245986Z_controller
+
+[4/8] source_a / simplified / held_out_two_components_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_two_components_sparse_ports: 3 cases
+RUN held_out_two_components_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.2s) 
+RUN held_out_two_components_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (14.1s) 
+RUN held_out_two_components_sparse_ports / preservation_repeated_component_delivery
+FAIL preservation_repeated_component_delivery (3.1s) h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_two_components_sparse_ports 2/3      -        -        -        1 FAIL, 2 PASS
+  Forwarding tables: 9 verified, 0 failed, 0 inconclusive
+held_out_two_components_sparse_ports / preservation_repeated_component_delivery: FAIL — h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/simplified/held_out_two_components_sparse_ports/20261120T204219.473673Z_controller
+
+[5/8] source_b / original / held_out_chain_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_chain_sparse_ports: 3 cases
+RUN held_out_chain_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.1s) 
+RUN held_out_chain_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (13.8s) 
+RUN held_out_chain_sparse_ports / preservation_repeated_component_delivery
+PASS preservation_repeated_component_delivery (13.7s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_chain_sparse_ports   3/3      -        -        -        PASS
+  Forwarding tables: 16 verified, 0 failed, 0 inconclusive
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/original/held_out_chain_sparse_ports/20261120T204239.077381Z_controller
+
+[6/8] source_b / original / held_out_two_components_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_two_components_sparse_ports: 3 cases
+RUN held_out_two_components_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.2s) 
+RUN held_out_two_components_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (13.8s) 
+RUN held_out_two_components_sparse_ports / preservation_repeated_component_delivery
+FAIL preservation_repeated_component_delivery (3.2s) h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_two_components_sparse_ports 2/3      -        -        -        1 FAIL, 2 PASS
+  Forwarding tables: 9 verified, 0 failed, 0 inconclusive
+held_out_two_components_sparse_ports / preservation_repeated_component_delivery: FAIL — h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/original/held_out_two_components_sparse_ports/20261120T204308.989007Z_controller
+
+[7/8] source_b / simplified / held_out_chain_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_chain_sparse_ports: 3 cases
+RUN held_out_chain_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.1s) 
+RUN held_out_chain_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (13.8s) 
+RUN held_out_chain_sparse_ports / preservation_repeated_component_delivery
+PASS preservation_repeated_component_delivery (13.6s) 
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_chain_sparse_ports   3/3      -        -        -        PASS
+  Forwarding tables: 16 verified, 0 failed, 0 inconclusive
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/simplified/held_out_chain_sparse_ports/20261120T204328.403882Z_controller
+
+[8/8] source_b / simplified / held_out_two_components_sparse_ports
+Profile: FULL (all host pairs for forwarding/ping); observation window: 1.00s
+Running held_out_two_components_sparse_ports: 3 cases
+RUN held_out_two_components_sparse_ports / preservation_cold_destination
+PASS preservation_cold_destination (2.2s) 
+RUN held_out_two_components_sparse_ports / preservation_interleaved_cached_paths
+PASS preservation_interleaved_cached_paths (13.9s) 
+RUN held_out_two_components_sparse_ports / preservation_repeated_component_delivery
+FAIL preservation_repeated_component_delivery (3.1s) h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Configuration                 Base     Block    Move     Runtime  Outcome
+held_out_two_components_sparse_ports 2/3      -        -        -        1 FAIL, 2 PASS
+  Forwarding tables: 9 verified, 0 failed, 0 inconclusive
+held_out_two_components_sparse_ports / preservation_repeated_component_delivery: FAIL — h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap
+Evidence: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/simplified/held_out_two_components_sparse_ports/20261120T204358.248100Z_controller
+
+Paired comparison: {'MATCH': 10, 'REJECT': 2, 'INCONCLUSIVE': 0}
+source_a: NOT_ACCEPTED
+source_b: NOT_ACCEPTED
+Matching packet traces do not prove general equivalence; inconclusive tables remain unverified.
+Results saved in: /home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z
+jyu164@sdnlabjy:~/sdn-project/computer_network_lab$ 

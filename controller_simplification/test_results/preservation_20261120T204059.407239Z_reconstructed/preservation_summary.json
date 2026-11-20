@@ -1,0 +1,230 @@
+{
+  "record_type": "Reconstructed terminal transcript, not original packet evidence",
+  "runs": [
+    {
+      "source": "source_a",
+      "version": "original",
+      "configuration": "held_out_chain_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.3,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.7,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.8,
+          "message": ""
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/original/held_out_chain_sparse_ports/20261120T204059.495644Z_controller"
+    },
+    {
+      "source": "source_a",
+      "version": "original",
+      "configuration": "held_out_two_components_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.3,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.9,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "FAIL",
+          "duration_seconds_as_printed": 3.2,
+          "message": "h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap"
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/original/held_out_two_components_sparse_ports/20261120T204129.670062Z_controller"
+    },
+    {
+      "source": "source_a",
+      "version": "simplified",
+      "configuration": "held_out_chain_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 14.0,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.8,
+          "message": ""
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/simplified/held_out_chain_sparse_ports/20261120T204149.245986Z_controller"
+    },
+    {
+      "source": "source_a",
+      "version": "simplified",
+      "configuration": "held_out_two_components_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.2,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 14.1,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "FAIL",
+          "duration_seconds_as_printed": 3.1,
+          "message": "h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap"
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_a/simplified/held_out_two_components_sparse_ports/20261120T204219.473673Z_controller"
+    },
+    {
+      "source": "source_b",
+      "version": "original",
+      "configuration": "held_out_chain_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.8,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.7,
+          "message": ""
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/original/held_out_chain_sparse_ports/20261120T204239.077381Z_controller"
+    },
+    {
+      "source": "source_b",
+      "version": "original",
+      "configuration": "held_out_two_components_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.2,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.8,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "FAIL",
+          "duration_seconds_as_printed": 3.2,
+          "message": "h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap"
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/original/held_out_two_components_sparse_ports/20261120T204308.989007Z_controller"
+    },
+    {
+      "source": "source_b",
+      "version": "simplified",
+      "configuration": "held_out_chain_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.1,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.8,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.6,
+          "message": ""
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/simplified/held_out_chain_sparse_ports/20261120T204328.403882Z_controller"
+    },
+    {
+      "source": "source_b",
+      "version": "simplified",
+      "configuration": "held_out_two_components_sparse_ports",
+      "cases": [
+        {
+          "id": "preservation_cold_destination",
+          "status": "PASS",
+          "duration_seconds_as_printed": 2.2,
+          "message": ""
+        },
+        {
+          "id": "preservation_interleaved_cached_paths",
+          "status": "PASS",
+          "duration_seconds_as_printed": 13.9,
+          "message": ""
+        },
+        {
+          "id": "preservation_repeated_component_delivery",
+          "status": "FAIL",
+          "duration_seconds_as_printed": 3.1,
+          "message": "h2 -> h4 at h1: expected 0 packets, observed 3; see 001_h2_to_h4_at_h1.pcap"
+        }
+      ],
+      "ubuntu_evidence_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z/source_b/simplified/held_out_two_components_sparse_ports/20261120T204358.248100Z_controller"
+    }
+  ],
+  "case_counts": {
+    "PASS": 20,
+    "FAIL": 4,
+    "ERROR": 0
+  },
+  "reported_paired_comparison": {
+    "MATCH": 10,
+    "REJECT": 2,
+    "INCONCLUSIVE": 0
+  },
+  "reported_acceptance": {
+    "source_a": "NOT_ACCEPTED",
+    "source_b": "NOT_ACCEPTED"
+  },
+  "researcher_interpretation": "Partition trace has an incorrect receiver expectation: a MAC in another component remains unknown, so source-component bystanders may receive flooded copies. This run does not demonstrate a controller or simplification defect. Corrected evaluation is pending.",
+  "correction": "Preserve destination isolation and require local flooding for an unreachable, unknown destination; do not change controller code.",
+  "ubuntu_batch_directory": "/home/jyu164/sdn-project/computer_network_lab/week_four/evaluation_results/preservation_20261120T204059.407239Z"
+}
