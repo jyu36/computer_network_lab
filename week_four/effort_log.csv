@@ -1,0 +1,3 @@
+task_id,model_identifier,reasoning_setting,chat_identifier,started_at_utc,finished_at_utc,ai_elapsed_seconds,input_tokens,output_tokens,reasoning_tokens,reported_cost,currency,human_followup_messages,manual_code_edits,budget_limit,evaluation_outcome,notes
+source_a_simplification,,,,,,,,,,,,,,,PENDING_BASELINE_AND_HELD_OUT,"User reported simplification finished. Actual model/time/usage and human-intervention counts have not been verified; blank metrics are unavailable, not zero."
+source_b_simplification,,,,,,,,,,,,,,,PENDING_BASELINE_AND_HELD_OUT,"User reported simplification finished. Actual model/time/usage and human-intervention counts have not been verified; blank metrics are unavailable, not zero."
